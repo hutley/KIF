@@ -71,6 +71,33 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     return nil;
 }
 
++ (UIAccessibilityElement *)accessibilityElementMatchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock error:(out NSError **)error;
+{
+    UIAccessibilityElement *element = [[UIApplication sharedApplication] accessibilityElementMatchingBlock:matchBlock];
+    if (element) {
+        return element;
+    }
+    *error = [NSError KIFErrorWithFormat:@"Failed to find accessibility element with the match bloack \"%@\"", matchBlock];
+    return nil;
+}
+
++ (BOOL)accessibilityElement:(out UIAccessibilityElement **)foundElement view:(out UIView **)foundView matchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock error:(out NSError **)error;
+{
+    UIAccessibilityElement *element = [self accessibilityElementMatchingBlock:matchBlock error:error];
+    if (!element) {
+        return NO;
+    }
+    
+    UIView *view = [self viewContainingAccessibilityElement:element tappable:NO error:error];
+    if (!view) {
+        return NO;
+    }
+    
+    if (foundElement) { *foundElement = element; }
+    if (foundView) { *foundView = view; }
+    return YES;
+}
+
 + (UIView *)viewContainingAccessibilityElement:(UIAccessibilityElement *)element tappable:(BOOL)mustBeTappable error:(NSError **)error;
 {
     // Small safety mechanism.  If someone calls this method after a failing call to accessibilityElementWithLabel:..., we don't want to wipe out the error message.

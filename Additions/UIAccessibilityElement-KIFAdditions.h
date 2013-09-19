@@ -34,6 +34,9 @@
  */
 + (BOOL)accessibilityElement:(out UIAccessibilityElement **)foundElement view:(out UIView **)foundView withLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable error:(out NSError **)error;
 
++ (BOOL)accessibilityElement:(out UIAccessibilityElement **)foundElement view:(out UIView **)foundView matchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock error:(out NSError **)error;
+
+
 /*!
  @abstract Finds an accessibility element with a matching label, value, and traits.
  @discussion This functionality is identical to <tt>-[UIApplication accessibilityElementWithLabel:accessibilityValue:traits:]</tt> except that it detailed error messaging in the case where the element cannot be found.
@@ -44,6 +47,8 @@
  @return The found accessibility element.  If @c nil see the @c error for a detailed reason.
  */
 + (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits error:(out NSError **)error;
+
++ (UIAccessibilityElement *)accessibilityElementMatchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock error:(out NSError **)error;
 
 /*!
  @abstract Finds and attempts to make visible a view for a given accessibility element.

@@ -30,6 +30,7 @@
     [tester waitForViewWithAccessibilityLabel:@"Last Cell" traits:UIAccessibilityTraitSelected];
     [tester tapRowInTableViewWithAccessibilityLabel:@"TableView Tests Table" atIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
     [tester waitForViewWithAccessibilityLabel:@"First Cell" traits:UIAccessibilityTraitSelected];
+    
 }
 
 - (void)testTappingLastRowAndSection
