@@ -618,6 +618,9 @@
     CGPoint scrollStart = CGPointCenteredInRect(elementFrame);
     scrollStart.x -= scrollDisplacement.x / 2;
     scrollStart.y -= scrollDisplacement.y / 2;
+    
+    NSLog (@"SCROLL START: %f,%f", scrollStart.x, scrollStart.y);
+    NSLog (@"SCROLL DISTANCE: %f,%f", scrollDisplacement.x, scrollDisplacement.y);
 
     [viewToScroll dragFromPoint:scrollStart displacement:scrollDisplacement steps:kNumberOfPointsInScrollPath];
 }

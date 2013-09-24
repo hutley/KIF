@@ -67,6 +67,10 @@ typedef NSInteger KIFTestStepResult;
  */
 typedef KIFTestStepResult (^KIFTestExecutionBlock)(NSError **error);
 
+
+typedef KIFTestStepResult (^KIFTestConditionBlock)();
+
+
 /*!
  @typedef KIFTestCompletionBlock
  @param result The result of the test, either KIFTestStepResultSuccess or KIFTestStepResultFailure.
@@ -119,7 +123,8 @@ typedef void (^KIFTestCompletionBlock)(KIFTestStepResult result, NSError *error)
  @param interval The number of seconds to wait before returning.
  */
 - (void)waitForTimeInterval:(NSTimeInterval)timeInterval;
-
+- (void) waitForBlock:(KIFTestExecutionBlock)executionBlock untilCondition:(KIFTestConditionBlock)conditionBlock;
+- (void) waitForBlock:(KIFTestExecutionBlock)executionBlock untilCondition:(KIFTestConditionBlock)conditionBlock timeout:(NSTimeInterval)timeout;
 @end
 
 @protocol KIFTestActorDelegate <NSObject>

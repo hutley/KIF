@@ -383,6 +383,9 @@ typedef struct __GSEvent * GSEventRef;
         CGFloat progress = ((CGFloat)i)/(stepCount - 1);
         path[i] = CGPointMake(startPoint.x + (progress * displacement.x),
                               startPoint.y + (progress * displacement.y));
+        
+        NSLog (@"SCROLL POINT: %f,%f", path[i].x, path[i].y);
+
     }
     
     [self dragAlongPathWithPoints:path count:stepCount];
@@ -562,7 +565,7 @@ typedef struct __GSEvent * GSEventRef;
     // grab the superview UINavigationButton instead.
     if (!isUserInteractionEnabled && [self isKindOfClass:NSClassFromString(@"UIButtonLabel")]) {
         UIView *button = [self superview];
-        while (button && ![button isKindOfClass:NSClassFromString(@"UINavigationButton")]) {
+        while (button && ![button isKindOfClass:NSClassFromString(@"UIButton")]) {
             button = [button superview];
         }
         if (button && button.userInteractionEnabled) {

@@ -77,7 +77,7 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     if (element) {
         return element;
     }
-    *error = [NSError KIFErrorWithFormat:@"Failed to find accessibility element with the match bloack \"%@\"", matchBlock];
+    *error = [NSError KIFErrorWithFormat:@"Failed to find accessibility element with the match block \"%@\"", matchBlock];
     return nil;
 }
 
