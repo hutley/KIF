@@ -384,7 +384,7 @@ typedef struct __GSEvent * GSEventRef;
         path[i] = CGPointMake(startPoint.x + (progress * displacement.x),
                               startPoint.y + (progress * displacement.y));
         
-        NSLog (@"SCROLL POINT: %f,%f", path[i].x, path[i].y);
+        //NSLog (@"SCROLL POINT: %f,%f", path[i].x, path[i].y);
 
     }
     
