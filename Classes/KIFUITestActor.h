@@ -52,6 +52,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
 @interface KIFUITestActor : KIFTestActor
 
 - (UIView *)waitForViewWithAccessibilityIdentifier:(NSString *)identifier;
+- (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
 
 /*!
  @abstract Waits until a view or accessibility element is present.
@@ -146,6 +147,9 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  */
 - (void)waitForAccessibilityElement:(UIAccessibilityElement **)element view:(out UIView **)view withLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable;
 
+- (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view withLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable;
+
+- (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view matchingBlock:(BOOL (^)(UIAccessibilityElement* element))matchBlock;
 /*!
  @abstract Taps a particular view in the view hierarchy.
  @discussion The view or accessibility element with the given label is searched for in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Once the view is present and tappable, a tap event is simulated in the center of the view or element.
@@ -314,6 +318,9 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param verticalFraction The vertical displacement of the scroll action, as a fraction of the height of the view.
  */
 - (void)scrollViewWithAccessibilityLabel:(NSString *)label byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction;
+
+- (void) scrollViewWithAccessbilityLabelOrIdentifier:(NSString*)identifierToScroll toViewWithAccessibilityLabelOrIdentifier:(NSString*)labelToScrollTo
+;
 
 /*!
  @abstract Waits until a view or accessibility element is the first responder.

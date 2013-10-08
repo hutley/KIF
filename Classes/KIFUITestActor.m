@@ -64,6 +64,13 @@
      }];
 }
 
+- (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view withLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable
+{
+    return [self waitForAccessibilityElement:element view:view matchingBlock:^BOOL(UIAccessibilityElement *element) {
+        return ([element.accessibilityIdentifier isEqualToString:labelOrIdentifier] || [element.accessibilityLabel isEqualToString:labelOrIdentifier]);
+    }];
+}
+
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view matchingBlock:(BOOL (^)(UIAccessibilityElement* element))matchBlock
 {
     [self runBlock:^KIFTestStepResult (NSError** error) {
@@ -78,6 +85,15 @@
     [self waitForAccessibilityElement:NULL view:&view matchingBlock:^BOOL (UIAccessibilityElement* element) {
          return [element.accessibilityIdentifier isEqualToString:identifier];
      }];
+    return view;
+}
+
+- (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
+{
+    UIView* view = nil;
+    [self waitForAccessibilityElement:NULL view:&view matchingBlock:^BOOL (UIAccessibilityElement* element) {
+        return ([element.accessibilityIdentifier isEqualToString:labelOrIdentifier] || [element.accessibilityLabel isEqualToString:labelOrIdentifier]);
+    }];
     return view;
 }
 
@@ -600,6 +616,33 @@
     [viewToSwipe dragFromPoint:swipeStart displacement:swipeDisplacement steps:kNumberOfPointsInSwipePath];
 }
 
+- (void) scrollViewWithAccessbilityLabelOrIdentifier:(NSString*)identifierToScroll toViewWithAccessibilityLabelOrIdentifier:(NSString*)labelToScrollTo
+{
+    UIScrollView* scrollView = (id)[self waitForViewWithAccessibilityLabelOrIdentifier:identifierToScroll];
+    CGFloat       direction  = 0.99;     //SCROLL UP
+    BOOL elementOnScreen     = NO;
+    
+    while (!elementOnScreen)
+    {
+        UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:NULL];
+        
+        if (elementToScrollTo)
+        {
+            //access frame doesn't account for device orientation so convert...
+            CGRect accessibilityFrame = [scrollView.window convertRect:elementToScrollTo.accessibilityFrame toView:scrollView];
+            direction       = (accessibilityFrame.origin.y -scrollView.contentOffset.y > scrollView.frame.size.height ? -0.99 : 0.99);
+            elementOnScreen = (accessibilityFrame.origin.y >= 0.0 && accessibilityFrame.origin.y -scrollView.contentOffset.y <= scrollView.frame.size.height);
+        }
+        
+        if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
+        {
+            [self scrollViewWithAccessibilityLabel:scrollView.accessibilityIdentifier byFractionOfSizeHorizontal:0.0 vertical:direction]; //if try for a 100% then it fails to scroll
+        }
+    }
+    
+    [self waitForViewWithAccessibilityLabelOrIdentifier:labelToScrollTo];
+}
+
 - (void) scrollViewWithAccessibilityLabel:(NSString*)label byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction
 {
     const NSUInteger kNumberOfPointsInScrollPath = 5;
@@ -607,7 +650,7 @@
     UIView* viewToScroll;
     UIAccessibilityElement* element;
 
-    [self waitForAccessibilityElement:&element view:&viewToScroll withLabel:label value:nil traits:UIAccessibilityTraitNone tappable:NO];
+    [self waitForAccessibilityElement:&element view:&viewToScroll withLabelOrIdentifier:label value:Nil traits:UIAccessibilityTraitNone tappable:NO];
 
     // Within this method, all geometry is done in the coordinate system of the view to scroll.
 
