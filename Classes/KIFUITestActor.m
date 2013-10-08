@@ -619,8 +619,10 @@
 - (void) scrollViewWithAccessbilityLabelOrIdentifier:(NSString*)identifierToScroll toViewWithAccessibilityLabelOrIdentifier:(NSString*)labelToScrollTo
 {
     UIScrollView* scrollView = (id)[self waitForViewWithAccessibilityLabelOrIdentifier:identifierToScroll];
-    CGFloat       direction  = 0.99;     //SCROLL UP
+    CGFloat       direction  = 0.5 ;     //SCROLL UP
     BOOL elementOnScreen     = NO;
+    CGPoint lastOffset = scrollView.contentOffset;
+    
     
     while (!elementOnScreen)
     {
@@ -630,13 +632,21 @@
         {
             //access frame doesn't account for device orientation so convert...
             CGRect accessibilityFrame = [scrollView.window convertRect:elementToScrollTo.accessibilityFrame toView:scrollView];
-            direction       = (accessibilityFrame.origin.y -scrollView.contentOffset.y > scrollView.frame.size.height ? -0.99 : 0.99);
+            direction       = (accessibilityFrame.origin.y -scrollView.contentOffset.y > scrollView.frame.size.height ? -0.5 : 0.5);
             elementOnScreen = (accessibilityFrame.origin.y >= 0.0 && accessibilityFrame.origin.y -scrollView.contentOffset.y <= scrollView.frame.size.height);
         }
         
         if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
         {
             [self scrollViewWithAccessibilityLabel:scrollView.accessibilityIdentifier byFractionOfSizeHorizontal:0.0 vertical:direction]; //if try for a 100% then it fails to scroll
+            
+            //if we are not moving, try the other direction.
+            if (lastOffset.y == scrollView.contentOffset.y && lastOffset.x == scrollView.contentOffset.x)
+            {
+                direction = -direction;
+            }
+            
+            lastOffset = scrollView.contentOffset;
         }
     }
     

@@ -112,6 +112,7 @@ typedef struct __GSEvent * GSEventRef;
 
 - (UIAccessibilityElement *)accessibilityElementMatchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock;
 {
+
     if (self.hidden) {
         return nil;
     }
@@ -158,7 +159,6 @@ typedef struct __GSEvent * GSEventRef;
     while (elementStack.count) {
         UIAccessibilityElement *element = [[[elementStack lastObject] retain] autorelease];
         [elementStack removeLastObject];
-
         BOOL elementMatches = matchBlock(element);
 
         if (elementMatches) {
@@ -183,12 +183,27 @@ typedef struct __GSEvent * GSEventRef;
         for (NSInteger accessibilityElementIndex = 0; accessibilityElementIndex < accessibilityElementCount; accessibilityElementIndex++) {
             UIAccessibilityElement *subelement = [element accessibilityElementAtIndex:accessibilityElementIndex];
             
-            if (subelement) {
+            UIView *viewForElement = [UIAccessibilityElement viewContainingAccessibilityElement:element];
+            CGRect accessibilityFrame = [viewForElement.window convertRect:element.accessibilityFrame toView:viewForElement];
+            
+            //don't cause scrollviews and tableviews to completely load by trying to access all the nonvisible
+            //cells, only look at ones that should be onscreen or nearly onscreen.
+            BOOL shouldBeVisibleAlready = YES;
+            if ([viewForElement isKindOfClass:[UIScrollView class]])
+            {
+                UIScrollView* scrollView = (id)viewForElement;
+
+                //Load double the height to account for possible partial visibility....
+                shouldBeVisibleAlready = (accessibilityFrame.origin.y > scrollView.contentOffset.y+scrollView.frame.size.height*2 && accessibilityFrame.origin.y < scrollView.contentOffset.y-scrollView.frame.size.height*2);
+                
+            }
+            
+            if (subelement && shouldBeVisibleAlready) {
                 [elementStack addObject:subelement];
             }
         }
     }
-        
+
     return matchingButOccludedElement;
 }
 
