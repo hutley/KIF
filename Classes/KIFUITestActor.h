@@ -21,77 +21,162 @@
  @constant KIFSwipeDirectionUp Swipe up.
  @constant KIFSwipeDirectionDown Swipe down.
  */
-typedef NS_ENUM(NSUInteger, KIFSwipeDirection) {
+typedef NS_ENUM(NSUInteger, KIFSwipeDirection)
+{
     KIFSwipeDirectionRight,
     KIFSwipeDirectionLeft,
     KIFSwipeDirectionUp,
     KIFSwipeDirectionDown
 };
 
+/*!
+ @enum KIFViewLocation
+ @abstract Location in which to start swipe. View is divided into 9 sections - points are the midpoints of these sections.
+ @constant KIFViewLocationCenter Swipe from center point.
+ @constant KIFViewLocationCenterTop Swipe from center top point.
+ @constant KIFViewLocationCenterBottom Swipe from center bottom point.
+ @constant KIFViewLocationLeftTop Swipe from left top point.
+ @constant KIFViewLocationLeftCenter Swipe from left center point.
+ @constant KIFViewLocationLeftBottom Swipe from left bottom point.
+ @constant KIFViewLocationRightTop Swipe from right top point.
+ @constant KIFViewLocationRightCenter Swipe from right center point.
+ @constant KIFViewLocationRightBottom Swipe from right bottom point.
+ */
+typedef NS_ENUM(NSUInteger, KIFViewLocation)
+{
+    KIFViewLocationCenter = 0,
+    KIFViewLocationCenterTop,
+    KIFViewLocationCenterBottom,
+    KIFViewLocationLeftTop,
+    KIFViewLocationLeftCenter,
+    KIFViewLocationLeftBottom,
+    KIFViewLocationRightTop,
+    KIFViewLocationRightCenter,
+    KIFViewLocationRightBottom
+};
+
+static inline CGPoint CGPointFromViewLocationPointAndRect(KIFViewLocation location, CGRect rect)
+{
+    CGFloat colWidth  = rect.size.width / 6;
+    CGFloat rowHeight = rect.size.height / 6;
+
+    NSUInteger left = 1;
+    NSUInteger top = 1;
+    NSUInteger center = 3;
+    NSUInteger right = 5;
+    NSUInteger bottom = 5;
+
+    switch (location)
+    {
+        case KIFViewLocationCenter:
+            return CGPointMake(center*colWidth, center*rowHeight);
+        case KIFViewLocationCenterTop:
+            return CGPointMake(center*colWidth, top*rowHeight);
+        case KIFViewLocationCenterBottom:
+            return CGPointMake(center*colWidth, bottom*rowHeight);
+        case KIFViewLocationLeftTop:
+            return CGPointMake(left*colWidth, top*rowHeight);
+        case KIFViewLocationLeftCenter:
+            return CGPointMake(left*colWidth, center*rowHeight);
+        case KIFViewLocationLeftBottom:
+            return CGPointMake(left*colWidth, bottom*rowHeight);
+        case KIFViewLocationRightTop:
+            return CGPointMake(right*colWidth, top*rowHeight);
+        case KIFViewLocationRightCenter:
+            return CGPointMake(right*colWidth, center*rowHeight);
+        case KIFViewLocationRightBottom:
+            return CGPointMake(right*colWidth, bottom*rowHeight);
+    }
+}
+
 #define kKIFMajorSwipeDisplacement 200
 #define kKIFMinorSwipeDisplacement 5
 
-static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirection direction)
+static inline KIFDisplacement KIFDisplacementForSwipingInDirectionByPoints(KIFSwipeDirection direction,  CGFloat horizontal, CGFloat vertical)
 {
+    vertical   = (vertical < kKIFMinorSwipeDisplacement ? kKIFMinorSwipeDisplacement : vertical);
+    horizontal = (horizontal < kKIFMinorSwipeDisplacement ? kKIFMinorSwipeDisplacement : horizontal);
+
     switch (direction)
     {
-            // As discovered on the Frank mailing lists, it won't register as a
-            // swipe if you move purely horizontally or vertically, so need a
-            // slight orthogonal offset too.
         case KIFSwipeDirectionRight:
-            return CGPointMake(kKIFMajorSwipeDisplacement, kKIFMinorSwipeDisplacement);
+            return CGPointMake(horizontal, vertical);
         case KIFSwipeDirectionLeft:
-            return CGPointMake(-kKIFMajorSwipeDisplacement, kKIFMinorSwipeDisplacement);
+            return CGPointMake(-horizontal, vertical);
         case KIFSwipeDirectionUp:
-            return CGPointMake(kKIFMinorSwipeDisplacement, -kKIFMajorSwipeDisplacement);
+            return CGPointMake(vertical, -horizontal);
         case KIFSwipeDirectionDown:
-            return CGPointMake(kKIFMinorSwipeDisplacement, kKIFMajorSwipeDisplacement);
+            return CGPointMake(vertical, horizontal);
     }
+}
+
+static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirection direction)
+{
+    // As discovered on the Frank mailing lists, it won't register as a
+    // swipe if you move purely horizontally or vertically, so need a
+    // slight orthogonal offset too.
+    return KIFDisplacementForSwipingInDirectionByPoints(direction, kKIFMajorSwipeDisplacement, kKIFMinorSwipeDisplacement);
 }
 
 @interface KIFUITestActor : KIFTestActor
 
-- (UIView *)waitForViewWithAccessibilityIdentifier:(NSString *)identifier;
+/*!
+ @abstract Waits until a view or accessibility element is present.
+ @discussion The view or accessibility element with the given identifier is found in the view hierarchy. If the element isn't found, then the step will attempt to wait until it is. Note that the view does not necessarily have to be visible on the screen, and may be behind another view or offscreen. Views with their hidden property set to YES are ignored.
+
+ If the view you want to wait for is tappable, use the -waitForTappableViewWithAccessibilityLabel: methods instead as they provide a more strict test.
+ @param identifier The accessibility identifier of the element to wait for.
+ */
+
+- (UIView*) waitForViewWithAccessibilityIdentifier:(NSString*)identifier;
+
+/*!
+ @abstract Waits until a view or accessibility element is present.
+ @discussion The view or accessibility element with the given label or identifier is found in the view hierarchy. If the element isn't found, then the step will attempt to wait until it is. Note that the view does not necessarily have to be visible on the screen, and may be behind another view or offscreen. Views with their hidden property set to YES are ignored.
+
+ If the view you want to wait for is tappable, use the -waitForTappableViewWithAccessibilityLabel: methods instead as they provide a more strict test.
+ @param labelOrIdentifier The accessibility label or identifier of the element to wait for.
+ */
 - (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
 
 /*!
  @abstract Waits until a view or accessibility element is present.
  @discussion The view or accessibility element with the given label is found in the view hierarchy. If the element isn't found, then the step will attempt to wait until it is. Note that the view does not necessarily have to be visible on the screen, and may be behind another view or offscreen. Views with their hidden property set to YES are ignored.
- 
+
  If the view you want to wait for is tappable, use the -waitForTappableViewWithAccessibilityLabel: methods instead as they provide a more strict test.
  @param label The accessibility label of the element to wait for.
  */
-- (UIView *)waitForViewWithAccessibilityLabel:(NSString *)label;
+- (UIView*) waitForViewWithAccessibilityLabel:(NSString*)label;
 
 /*!
  @abstract Waits until a view or accessibility element is present.
  @discussion The view or accessibility element with the given label is found in the view hierarchy. If the element isn't found, then the step will attempt to wait until it is. Note that the view does not necessarily have to be visible on the screen, and may be behind another view or offscreen. Views with their hidden property set to YES are ignored.
- 
+
  If the view you want to wait for is tappable, use the -waitForTappableViewWithAccessibilityLabel: methods instead as they provide a more strict test.
  @param label The accessibility label of the element to wait for.
  @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
  */
-- (UIView *)waitForViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;
+- (UIView*) waitForViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits;
 
 
 /*!
  @abstract Waits until a view or accessibility element is present.
  @discussion The view or accessibility element with the given label is found in the view hierarchy. If the element isn't found, then the step will attempt to wait until it is. Note that the view does not necessarily have to be visible on the screen, and may be behind another view or offscreen. Views with their hidden property set to YES are ignored.
- 
+
  If the view you want to wait for is tappable, use the -waitForTappableViewWithAccessibilityLabel: methods instead as they provide a more strict test.
  @param label The accessibility label of the element to wait for.
  @param value The accessibility value of the element to tap.
  @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
  @result A configured test step.
  */
-- (UIView *)waitForViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits;
+- (UIView*) waitForViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits;
 
 /*!
  @abstract Waits until a view or accessibility element is no longer present.
  @discussion The view or accessibility element with the given label is found in the view hierarchy. If the element is found, then the step will attempt to wait until it isn't. Note that the view does not necessarily have to be visible on the screen, and may be behind another view or offscreen. Views with their hidden property set to YES are considered absent.
  @param label The accessibility label of the element to wait for.
  */
-- (void)waitForAbsenceOfViewWithAccessibilityLabel:(NSString *)label;
+- (void) waitForAbsenceOfViewWithAccessibilityLabel:(NSString*)label;
 
 /*!
  @abstract Waits until a view or accessibility element is no longer present.
@@ -99,7 +184,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param label The accessibility label of the element to wait for.
  @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
  */
-- (void)waitForAbsenceOfViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;
+- (void) waitForAbsenceOfViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits;
 
 /*!
  @abstract Waits until a view or accessibility element is no longer present.
@@ -108,14 +193,14 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param value The accessibility value of the element to tap.
  @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
  */
-- (void)waitForAbsenceOfViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits;
+- (void) waitForAbsenceOfViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits;
 
 /*!
  @abstract Waits until a view or accessibility element is present and available for tapping.
  @discussion The view or accessibility element with the given label is found in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Whether or not a view is tappable is based on -[UIView hitTest:].
  @param label The accessibility label of the element to wait for.
  */
-- (UIView *)waitForTappableViewWithAccessibilityLabel:(NSString *)label;
+- (UIView*) waitForTappableViewWithAccessibilityLabel:(NSString*)label;
 
 /*!
  @abstract Waits until a view or accessibility element is present and available for tapping.
@@ -123,7 +208,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param label The accessibility label of the element to wait for.
  @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
  */
-- (UIView *)waitForTappableViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;
+- (UIView*) waitForTappableViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits;
 
 /*!
  @abstract Waits until a view or accessibility element is present and available for tapping.
@@ -132,7 +217,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param value The accessibility value of the element to tap.
  @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
  */
-- (UIView *)waitForTappableViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits;
+- (UIView*) waitForTappableViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits;
 
 
 /*
@@ -145,8 +230,9 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
  @param mustBeTappable If YES, only an element that can be tapped on will be returned.
  */
-- (void)waitForAccessibilityElement:(UIAccessibilityElement **)element view:(out UIView **)view withLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable;
+- (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view withLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable;
 
+//TODO: HIEDI comments and make this take into account the traits etc maybe
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view withLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable;
 
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view matchingBlock:(BOOL (^)(UIAccessibilityElement* element))matchBlock;
@@ -155,7 +241,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @discussion The view or accessibility element with the given label is searched for in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Once the view is present and tappable, a tap event is simulated in the center of the view or element.
  @param label The accessibility label of the element to tap.
  */
-- (void)tapViewWithAccessibilityLabel:(NSString *)label;
+- (void) tapViewWithAccessibilityLabel:(NSString*)label;
 
 /*!
  @abstract Taps a particular view in the view hierarchy.
@@ -163,18 +249,18 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param label The accessibility label of the element to tap.
  @param traits The accessibility traits of the element to tap. Elements that do not include at least these traits are ignored.
  */
-- (void)tapViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;
+- (void) tapViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits;
 
 /*!
  @abstract Taps a particular view in the view hierarchy.
  @discussion The view or accessibility element with the given label is searched for in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Once the view is present and tappable, a tap event is simulated in the center of the view or element.
- 
+
  This variation allows finding a particular instance of an accessibility element. For example, a table view might have multiple elements with the accessibility label of "Employee", but only one that also has the accessibility value of "Bob".
  @param label The accessibility label of the element to tap.
  @param value The accessibility value of the element to tap.
  @param traits The accessibility traits of the element to tap. Elements that do not include at least these traits are ignored.
  */
-- (void)tapViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits;
+- (void) tapViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits;
 
 /*!
  @abstract Taps a particular view in the view heirarchy.
@@ -182,15 +268,15 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param element The accessibility element to tap.
  @param view The view containing the accessibility element.
  */
-- (void)tapAccessibilityElement:(UIAccessibilityElement *)element inView:(UIView *)view;
+- (void) tapAccessibilityElement:(UIAccessibilityElement*)element inView:(UIView*)view;
 
 /*!
  @abstract Taps the screen at a particular point.
  @discussion Taps the screen at a specific point. In general you should use the factory steps that tap a view based on its accessibility label, but there are situations where it's not possible to access a view using accessibility mechanisms. This step is more lenient than the steps that use the accessibility label, and does not wait for any particular view to appear, or validate that the tapped view is enabled or has interaction enabled. Because this step doesn't doesn't validate that a view is present before tapping it, it's good practice to precede this step where possible with a -waitForViewWithAccessibilityLabel: with the label for another view that should appear on the same screen.
- 
+
  @param screenPoint The point in screen coordinates to tap. Screen points originate from the top left of the screen.
  */
-- (void)tapScreenAtPoint:(CGPoint)screenPoint;
+- (void) tapScreenAtPoint:(CGPoint)screenPoint;
 
 /*!
  @abstract Performs a long press on a particular view in the view hierarchy.
@@ -198,37 +284,37 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param label The accessibility label of the element to tap.
  @param duration The length of time to long press the element.
  */
-- (void)longPressViewWithAccessibilityLabel:(NSString *)label duration:(NSTimeInterval)duration;
+- (void) longPressViewWithAccessibilityLabel:(NSString*)label duration:(NSTimeInterval)duration;
 
 /*!
  @abstract Performs a long press on a particular view in the view hierarchy.
  @discussion The view or accessibility element with the given label is searched for in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Once the view is present and tappable, touch events are simulated in the center of the view or element.
- 
+
  This variation allows finding a particular instance of an accessibility element. For example, a table view might have multiple elements with the accessibility label of "Employee", but only one that also has the accessibility value of "Bob".
  @param label The accessibility label of the element to tap.
  @param value The accessibility value of the element to tap.
  @param duration The length of time to long press the element.
  */
-- (void)longPressViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value duration:(NSTimeInterval)duration;
+- (void) longPressViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value duration:(NSTimeInterval)duration;
 
 /*!
  @abstract Performs a long press on a particular view in the view hierarchy.
  @discussion The view or accessibility element with the given label is searched for in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Once the view is present and tappable, touch events are simulated in the center of the view or element.
- 
+
  This variation allows finding a particular instance of an accessibility element. For example, a table view might have multiple elements with the accessibility label of "Employee", but only one that also has the accessibility value of "Bob".
  @param label The accessibility label of the element to tap.
  @param value The accessibility value of the element to tap.
  @param traits The accessibility traits of the element to tap. Elements that do not include at least these traits are ignored.
  @param duration The length of time to long press the element.
  */
-- (void)longPressViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits duration:(NSTimeInterval)duration;
+- (void) longPressViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits duration:(NSTimeInterval)duration;
 
 /*!
  @abstract Enters text into a the current first responder.
  @discussion Text is entered into the view by simulating taps on the appropriate keyboard keys if the keyboard is already displayed. Useful to enter text in UIWebViews or components with no accessibility labels.
  @param text The text to enter.
  */
-- (void)enterTextIntoCurrentFirstResponder:(NSString *)text;
+- (void) enterTextIntoCurrentFirstResponder:(NSString*)text;
 
 /*!
  @abstract Enters text into a particular view in the view hierarchy.
@@ -236,7 +322,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param text The text to enter.
  @param label The accessibility label of the element to type into.
  */
-- (void)enterText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label;
+- (void) enterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label;
 
 /*!
  @abstract Enters text into a particular view in the view hierarchy.
@@ -246,20 +332,20 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param traits The accessibility traits of the element to type into. Elements that do not include at least these traits are ignored.
  @param expectedResult What the text value should be after entry, including any formatting done by the field. If this is nil, the "text" parameter will be used.
  */
-- (void)enterText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString *)expectedResult;
+- (void) enterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult;
 
-- (void)clearTextFromViewWithAccessibilityLabel:(NSString *)label;
-- (void)clearTextFromViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;
+- (void) clearTextFromViewWithAccessibilityLabel:(NSString*)label;
+- (void) clearTextFromViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits;
 
-- (void)clearTextFromAndThenEnterText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label;
-- (void)clearTextFromAndThenEnterText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString *)expectedResult;
+- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label;
+- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult;
 
 /*!
  @abstract ASelects an item from a currently visible picker view.
  @discussion With a picker view already visible, this step will find an item with the given title, select that item, and tap the Done button.
  @param title The title of the row to select.
  */
-- (void)selectPickerViewRowWithTitle:(NSString *)title;
+- (void) selectPickerViewRowWithTitle:(NSString*)title;
 
 /*!
  @abstract Toggles a UISwitch into a specified position.
@@ -267,7 +353,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param switchIsOn The desired position of the UISwitch.
  @param label The accessibility label of the element to switch.
  */
-- (void)setOn:(BOOL)switchIsOn forSwitchWithAccessibilityLabel:(NSString *)label;
+- (void) setOn:(BOOL)switchIsOn forSwitchWithAccessibilityLabel:(NSString*)label;
 
 /*!
  @abstract Slides a UISlider to a specified value.
@@ -275,13 +361,13 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param value The desired value of the UISlider.
  @param label The accessibility label of the element to drag.
  */
-- (void)setValue:(float)value forSliderWithAccessibilityLabel:(NSString *)label;
+- (void) setValue:(float)value forSliderWithAccessibilityLabel:(NSString*)label;
 
 /*!
  @abstract Dismisses a popover on screen.
  @discussion With a popover up, tap at the top-left corner of the screen.
  */
-- (void)dismissPopover;
+- (void) dismissPopover;
 
 /*!
  @abstract Select a certain photo from the built in photo picker.
@@ -290,17 +376,17 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param row The row number in the album for the desired photo.
  @param column The column number in the album for the desired photo.
  */
-- (void)choosePhotoInAlbum:(NSString *)albumName atRow:(NSInteger)row column:(NSInteger)column;
+- (void) choosePhotoInAlbum:(NSString*)albumName atRow:(NSInteger)row column:(NSInteger)column;
 
 /*!
  @abstract Taps the row at IndexPath in a view with the given label.
  @discussion This step will get the view with the specified accessibility label and tap the row at indexPath.
- 
+
  For cases where you may need to work from the end of a table view rather than the beginning, negative sections count back from the end of the table view (-1 is the last section) and negative rows count back from the end of the section (-1 is the last row for that section).
  @param tableViewLabel Accessibility label of the table view.
  @param indexPath Index path of the row to tap.
  */
-- (void)tapRowInTableViewWithAccessibilityLabel:(NSString*)tableViewLabel atIndexPath:(NSIndexPath *)indexPath;
+- (void) tapRowInTableViewWithAccessibilityLabel:(NSString*)tableViewLabel atIndexPath:(NSIndexPath*)indexPath;
 
 /*!
  @abstract Swipes a particular view in the view hierarchy in the given direction.
@@ -308,7 +394,28 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param label The accessibility label of the view to swipe.
  @param direction The direction in which to swipe.
  */
-- (void)swipeViewWithAccessibilityLabel:(NSString *)label inDirection:(KIFSwipeDirection)direction;
+- (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction;
+
+/*!
+ @abstract Swipes a particular view in the view hierarchy in the given direction.
+ @discussion The view will get the view with the specified accessibility label and swipe the screen in the given direction from the specified start location.
+ @param label The accessibility label of the view to swipe.
+ @param direction The direction in which to swipe.
+ @param startLocation The location in the view in which to start the swipe.
+
+ */
+- (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation;
+
+/*!
+ @abstract Swipes a particular view in the view hierarchy in the given direction.
+ @discussion The view will get the view with the specified accessibility label and swipe the screen in the given direction from the specified start location.
+ @param label The accessibility label of the view to swipe.
+ @param direction The direction in which to swipe.
+ @param startLocation The location in the view in which to start the swipe.
+ @param horizontalFraction The horizontal displacement of the swipe action, as a fraction of the width of the view.
+ @param verticalFraction The vertical displacement of the swipe action, as a fraction of the height of the view.
+ */
+- (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction;
 
 /*!
  @abstract Scrolls a particular view in the view hierarchy by an amount indicated as a fraction of its size.
@@ -317,10 +424,17 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param horizontalFraction The horizontal displacement of the scroll action, as a fraction of the width of the view.
  @param verticalFraction The vertical displacement of the scroll action, as a fraction of the height of the view.
  */
-- (void)scrollViewWithAccessibilityLabel:(NSString *)label byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction;
+- (void) scrollViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction;
 
-- (void) scrollViewWithAccessbilityLabelOrIdentifier:(NSString*)identifierToScroll toViewWithAccessibilityLabelOrIdentifier:(NSString*)labelToScrollTo
-;
+/*!
+ @abstract Scrolls a particular view in the view hierarchy by enough to bring the specified element on screen.
+ @discussion The view will get the view with the specified accessibility label and scroll it far enough in either direction to bring the specified accessibility element on screen, with the scroll centered on the center of the view.
+ @param labelOrIdentifierToScroll The accessibility label or identifier of the view to scroll.
+ @param labelOrIdentifierToScrollTo The accessibility label of the view to scroll to.
+
+ */
+
+- (void) scrollViewWithAccessbilityLabelOrIdentifier:(NSString*)labelOrIdentifierToScroll toViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifierToScrollTo;
 
 /*!
  @abstract Waits until a view or accessibility element is the first responder.
@@ -329,6 +443,6 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  step returns success else it will attempt to wait until they do.
  @param label The accessibility label of the element to wait for.
  */
-- (void)waitForFirstResponderWithAccessibilityLabel:(NSString *)label;
+- (void) waitForFirstResponderWithAccessibilityLabel:(NSString*)label;
 
 @end

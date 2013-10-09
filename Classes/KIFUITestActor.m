@@ -596,23 +596,49 @@
     [tableView tapAtPoint:CGPointCenteredInRect(cellFrame)];
 }
 
-- (void) swipeViewWithAccessibilityLabel:(NSString*)label inDirection:(KIFSwipeDirection)direction
+- (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction
 {
-    const NSUInteger kNumberOfPointsInSwipePath = 20;
-
-    // The original version of this came from http://groups.google.com/group/kif-framework/browse_thread/thread/df3f47eff9f5ac8c
-
     UIView* viewToSwipe;
     UIAccessibilityElement* element;
 
-    [self waitForAccessibilityElement:&element view:&viewToSwipe withLabel:label value:nil traits:UIAccessibilityTraitNone tappable:NO];
+    [self waitForAccessibilityElement:&element view:&viewToSwipe withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:NO];
 
-    // Within this method, all geometry is done in the coordinate system of the view to swipe.
-
-    CGRect          elementFrame      = [viewToSwipe.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToSwipe];
-    CGPoint         swipeStart        = CGPointCenteredInRect(elementFrame);
     KIFDisplacement swipeDisplacement = KIFDisplacementForSwipingInDirection(direction);
+    [self swipeView:viewToSwipe element:element inDirection:direction startLocation:KIFViewLocationCenter swipeDisplacement:swipeDisplacement];
+}
 
+- (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation
+{
+    UIView* viewToSwipe;
+    UIAccessibilityElement* element;
+    
+    [self waitForAccessibilityElement:&element view:&viewToSwipe withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:NO];
+    KIFDisplacement swipeDisplacement = KIFDisplacementForSwipingInDirection(direction);
+    [self swipeView:viewToSwipe element:element inDirection:direction startLocation:startLocation swipeDisplacement:swipeDisplacement];
+}
+
+- (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction
+{
+    UIView* viewToSwipe;
+    UIAccessibilityElement* element;
+
+    [self waitForAccessibilityElement:&element view:&viewToSwipe withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:NO];
+
+    KIFDisplacement swipeDisplacement = KIFDisplacementForSwipingInDirectionByPoints(direction, horizontalFraction*viewToSwipe.frame.size.width, verticalFraction*viewToSwipe.frame.size.height);
+
+    [self swipeView:viewToSwipe element:element inDirection:direction startLocation:startLocation swipeDisplacement:swipeDisplacement];
+}
+
+
+- (void) swipeView:(UIView*)viewToSwipe element:(UIAccessibilityElement*)element inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation swipeDisplacement:(KIFDisplacement)swipeDisplacement
+{
+    const NSUInteger kNumberOfPointsInSwipePath = 20;
+    
+    // The original version of this came from http://groups.google.com/group/kif-framework/browse_thread/thread/df3f47eff9f5ac8c
+    
+    // Within this method, all geometry is done in the coordinate system of the view to swipe.
+    CGRect          elementFrame      = [viewToSwipe.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToSwipe];
+    CGPoint         swipeStart        = CGPointFromViewLocationPointAndRect(startLocation, elementFrame);
     [viewToSwipe dragFromPoint:swipeStart displacement:swipeDisplacement steps:kNumberOfPointsInSwipePath];
 }
 
@@ -638,7 +664,7 @@
         
         if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
         {
-            [self scrollViewWithAccessibilityLabel:scrollView.accessibilityIdentifier byFractionOfSizeHorizontal:0.0 vertical:direction]; //if try for a 100% then it fails to scroll
+            [self scrollViewWithAccessibilityLabelOrIdentifier:scrollView.accessibilityIdentifier byFractionOfSizeHorizontal:0.0 vertical:direction]; //if try for a 100% then it fails to scroll
             
             //if we are not moving, try the other direction.
             if (lastOffset.y == scrollView.contentOffset.y && lastOffset.x == scrollView.contentOffset.x)
@@ -653,14 +679,14 @@
     [self waitForViewWithAccessibilityLabelOrIdentifier:labelToScrollTo];
 }
 
-- (void) scrollViewWithAccessibilityLabel:(NSString*)label byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction
+- (void) scrollViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction
 {
     const NSUInteger kNumberOfPointsInScrollPath = 5;
 
     UIView* viewToScroll;
     UIAccessibilityElement* element;
 
-    [self waitForAccessibilityElement:&element view:&viewToScroll withLabelOrIdentifier:label value:Nil traits:UIAccessibilityTraitNone tappable:NO];
+    [self waitForAccessibilityElement:&element view:&viewToScroll withLabelOrIdentifier:labelOrIdentifier value:Nil traits:UIAccessibilityTraitNone tappable:NO];
 
     // Within this method, all geometry is done in the coordinate system of the view to scroll.
 
