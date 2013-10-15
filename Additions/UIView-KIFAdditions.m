@@ -324,6 +324,9 @@ typedef struct __GSEvent * GSEventRef;
     [self tapAtPoint:centerPoint];
 }
 
+#define DRAG_TOUCH_DELAY 0.01
+#define TAP_TOUCH_DELAY 0.1
+
 - (void)tapAtPoint:(CGPoint)point;
 {
     // Web views don't handle touches in a normal fashion, but they do have a method we can call to tap them
@@ -352,6 +355,9 @@ typedef struct __GSEvent * GSEventRef;
 
     [[UIApplication sharedApplication] sendEvent:event];
 
+    //Give the UI a chance to update
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, TAP_TOUCH_DELAY, false);
+
     [touch setPhase:UITouchPhaseEnded];
     [[UIApplication sharedApplication] sendEvent:event];
 
@@ -363,7 +369,6 @@ typedef struct __GSEvent * GSEventRef;
     [touch release];
 }
 
-#define DRAG_TOUCH_DELAY 0.01
 
 - (void)longPressAtPoint:(CGPoint)point duration:(NSTimeInterval)duration
 {
