@@ -32,6 +32,8 @@ UIKIT_EXTERN NSString *const UIApplicationOpenedURLKey;
  */
 - (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label accessibilityValue:(NSString *)value traits:(UIAccessibilityTraits)traits;
 
+- (UIAccessibilityElement *)accessibilityElementWithLabelOrIdentifier:(NSString *)labelOrIdentifier accessibilityValue:(NSString *)value traits:(UIAccessibilityTraits)traits;
+
 /*!
  @abstract Finds an accessibility element where @c matchBlock returns @c YES, across all windows in the application starting at the fronmost window.
  @discussion This method should be used if @c accessibilityElementWithLabel:accessibilityValue:traits: does not meet your requirements.  For example, if you are searching for an element that begins with a pattern or if of a certain view type.

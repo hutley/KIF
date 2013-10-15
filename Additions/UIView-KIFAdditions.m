@@ -110,6 +110,26 @@ typedef struct __GSEvent * GSEventRef;
     }];
 }
 
+- (UIAccessibilityElement *)accessibilityElementWithLabelOrIdentifier:(NSString *)labelOrIdentifier accessibilityValue:(NSString *)value traits:(UIAccessibilityTraits)traits
+{
+    return [self accessibilityElementMatchingBlock:^(UIAccessibilityElement *element) {
+        
+        // TODO: This is a temporary fix for an SDK defect.
+        NSString *accessibilityValue = element.accessibilityValue;
+        if ([accessibilityValue isKindOfClass:[NSAttributedString class]]) {
+            accessibilityValue = [(NSAttributedString *)accessibilityValue string];
+        }
+        
+        BOOL labelsMatch = [element.accessibilityLabel isEqual:labelOrIdentifier];
+        BOOL identifiersMatch = [element.accessibilityIdentifier isEqual:labelOrIdentifier];
+        BOOL traitsMatch = ((element.accessibilityTraits) & traits) == traits;
+        BOOL valuesMatch = !value || [value isEqual:accessibilityValue];
+        
+        return (BOOL)((labelsMatch||identifiersMatch) && traitsMatch && valuesMatch);
+    }];
+}
+
+
 - (UIAccessibilityElement *)accessibilityElementMatchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock;
 {
 
@@ -399,7 +419,7 @@ typedef struct __GSEvent * GSEventRef;
         path[i] = CGPointMake(startPoint.x + (progress * displacement.x),
                               startPoint.y + (progress * displacement.y));
         
-        //NSLog (@"SCROLL POINT: %f,%f", path[i].x, path[i].y);
+        //NSLog (@"PATH_POINT_%i: %f,%f", i, path[i].x, path[i].y);
 
     }
     
@@ -419,14 +439,25 @@ typedef struct __GSEvent * GSEventRef;
     
     UIEvent *eventDown = [self _eventWithTouch:touch];
     [[UIApplication sharedApplication] sendEvent:eventDown];
-    
+
+    CGPoint centerA = [self.window convertPoint:self.center fromView:self];
+    //NSLog(@"CENTER_POINT_%i: %f %f", 0, centerA.x, centerA.y);
+
     CFRunLoopRunInMode(UIApplicationCurrentRunMode, DRAG_TOUCH_DELAY, false);
 
     for (NSInteger pointIndex = 1; pointIndex < count; pointIndex++) {
-        [touch setLocationInWindow:[self.window convertPoint:points[pointIndex] fromView:self]];
-        [touch setPhase:UITouchPhaseMoved];
+        CGPoint centerB = [self.window convertPoint:self.center fromView:self];
+        //NSLog(@"CENTER_POINT_%i: %f %f DIFF:%f %f", pointIndex, centerB.x, centerB.y, centerA.x - centerB.x, centerA.y - centerB.y);
+        CGFloat changeX = centerB.x - centerA.x;
+        CGFloat changeY = centerB.y - centerA.y;
         
-        UIEvent *eventDrag = [self _eventWithTouch:touch];
+        CGPoint dragPoint =[self.window convertPoint:points[pointIndex] fromView:self];
+        dragPoint = CGPointMake(dragPoint.x-changeX, dragPoint.y-changeY);
+        [touch setLocationInWindow:dragPoint];
+        //NSLog(@"DRAG_POINT_%i: %f %f", pointIndex, dragPoint.x, dragPoint.y);
+
+        [touch setPhase:UITouchPhaseMoved];
+                UIEvent *eventDrag = [self _eventWithTouch:touch];
         [[UIApplication sharedApplication] sendEvent:eventDrag];
 
         CFRunLoopRunInMode(UIApplicationCurrentRunMode, DRAG_TOUCH_DELAY, false);

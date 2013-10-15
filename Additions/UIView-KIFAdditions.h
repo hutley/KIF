@@ -19,6 +19,7 @@ typedef CGPoint KIFDisplacement;
 - (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label;
 - (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;
 - (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label accessibilityValue:(NSString *)value traits:(UIAccessibilityTraits)traits;
+- (UIAccessibilityElement *)accessibilityElementWithLabelOrIdentifier:(NSString *)labelOrIdentifier accessibilityValue:(NSString *)value traits:(UIAccessibilityTraits)traits;
 
 /*!
  @method accessibilityElementMatchingBlock:

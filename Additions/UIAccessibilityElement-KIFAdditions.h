@@ -15,11 +15,11 @@
 /*!
  @abstract Finds the first view that the accessibility element is part of.
  @discussion There is not always a one-to-one mapping between views and accessibility elements.  Accessibility elements may not even map to the view you will expect.  For instance, table view cell accessibility elements return the @c UITableView and keyboard keys map to the keyboard as a whole.
- 
+
  @param element The accessibility element.
  @return The first matching @c UIView as determined by the accessibility API.
  */
-+ (UIView *)viewContainingAccessibilityElement:(UIAccessibilityElement *)element;
++ (UIView*) viewContainingAccessibilityElement:(UIAccessibilityElement*)element;
 
 /*!
  @abstract Finds an accessibility element and view with a matching label, value, and traits, optionally passing a tappability test.
@@ -32,11 +32,11 @@
  @param error A reference to an error object to be populated when no matching element or view is found.  Can be @c NULL.
  @result @c YES if the element and view were found.  Otherwise @c NO.
  */
-+ (BOOL)accessibilityElement:(out UIAccessibilityElement **)foundElement view:(out UIView **)foundView withLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable error:(out NSError **)error;
++ (BOOL) accessibilityElement:(out UIAccessibilityElement**)foundElement view:(out UIView**)foundView withLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable error:(out NSError**)error;
 
-+ (BOOL)accessibilityElement:(out UIAccessibilityElement **)foundElement view:(out UIView **)foundView withLabelOrIdentifier:(NSString *)labelOrIdentifier tappable:(BOOL)mustBeTappable error:(out NSError **)error;
++ (BOOL) accessibilityElement:(out UIAccessibilityElement**)foundElement view:(out UIView**)foundView withLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable error:(out NSError**)error;
 
-+ (BOOL)accessibilityElement:(out UIAccessibilityElement **)foundElement view:(out UIView **)foundView matchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock error:(out NSError **)error;
++ (BOOL) accessibilityElement:(out UIAccessibilityElement**)foundElement view:(out UIView**)foundView matchingBlock:(BOOL (^)(UIAccessibilityElement*))matchBlock error:(out NSError**)error;
 
 
 /*!
@@ -48,19 +48,20 @@
  @param error A reference to an error object to be populated when no element is found.  Can be @c NULL.
  @return The found accessibility element.  If @c nil see the @c error for a detailed reason.
  */
-+ (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits error:(out NSError **)error;
-+ (UIAccessibilityElement *)accessibilityElementWithLabelOrIdentifier:(NSString *)labelOrIdentifier error:(out NSError **)error;
-+ (UIAccessibilityElement *)accessibilityElementMatchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock error:(out NSError **)error;
++ (UIAccessibilityElement*) accessibilityElementWithLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits error:(out NSError**)error;
++ (UIAccessibilityElement*) accessibilityElementWithLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits error:(out NSError**)error;
++ (UIAccessibilityElement*) accessibilityElementWithLabelOrIdentifier:(NSString*)labelOrIdentifier error:(out NSError**)error;
++ (UIAccessibilityElement*) accessibilityElementMatchingBlock:(BOOL (^)(UIAccessibilityElement*))matchBlock error:(out NSError**)error;
 
 /*!
  @abstract Finds and attempts to make visible a view for a given accessibility element.
  @discussion If the element is found, off screen, and is inside a scroll view, this method will attempt to programmatically scroll the view onto the screen before performing any logic as to if the view is tappable.
- 
+
  @param element The accessibility element.
  @param mustBeTappable If @c YES, a tappability test will be performed.
  @param error A reference to an error object to be populated when no element is found.  Can be @c NULL.
  @return The first matching view as determined by the accessibility API or nil if the view is hidden or fails the tappability test.
  */
-+ (UIView *)viewContainingAccessibilityElement:(UIAccessibilityElement *)element tappable:(BOOL)mustBeTappable error:(NSError **)error;
++ (UIView*) viewContainingAccessibilityElement:(UIAccessibilityElement*)element tappable:(BOOL)mustBeTappable error:(NSError**)error;
 
 @end

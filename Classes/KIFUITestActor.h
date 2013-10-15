@@ -96,7 +96,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirectionByPoints(KIFSw
 {
     vertical   = (vertical < kKIFMinorSwipeDisplacement ? kKIFMinorSwipeDisplacement : vertical);
     horizontal = (horizontal < kKIFMinorSwipeDisplacement ? kKIFMinorSwipeDisplacement : horizontal);
-
+    
     switch (direction)
     {
         case KIFSwipeDirectionRight:
@@ -104,9 +104,9 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirectionByPoints(KIFSw
         case KIFSwipeDirectionLeft:
             return CGPointMake(-horizontal, vertical);
         case KIFSwipeDirectionUp:
-            return CGPointMake(vertical, -horizontal);
+            return CGPointMake(horizontal, -vertical);
         case KIFSwipeDirectionDown:
-            return CGPointMake(vertical, horizontal);
+            return CGPointMake(horizontal, vertical);
     }
 }
 
@@ -232,7 +232,6 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  */
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view withLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable;
 
-//TODO: HIEDI comments and make this take into account the traits etc maybe
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view withLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable;
 
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view matchingBlock:(BOOL (^)(UIAccessibilityElement* element))matchBlock;
@@ -242,6 +241,8 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param label The accessibility label of the element to tap.
  */
 - (void) tapViewWithAccessibilityLabel:(NSString*)label;
+
+- (void) tapViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
 
 /*!
  @abstract Taps a particular view in the view hierarchy.
@@ -261,6 +262,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param traits The accessibility traits of the element to tap. Elements that do not include at least these traits are ignored.
  */
 - (void) tapViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits;
+- (void) tapViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits;
 
 /*!
  @abstract Taps a particular view in the view heirarchy.

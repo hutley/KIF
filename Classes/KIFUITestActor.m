@@ -66,8 +66,8 @@
 
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view withLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable
 {
-    return [self waitForAccessibilityElement:element view:view matchingBlock:^BOOL(UIAccessibilityElement *element) {
-        return ([element.accessibilityIdentifier isEqualToString:labelOrIdentifier] || [element.accessibilityLabel isEqualToString:labelOrIdentifier]);
+    [self runBlock:^KIFTestStepResult (NSError** error) {
+        return [UIAccessibilityElement accessibilityElement:element view:view withLabelOrIdentifier:labelOrIdentifier value:value traits:traits tappable:mustBeTappable error:error] ? KIFTestStepResultSuccess : KIFTestStepResultWait;
     }];
 }
 
@@ -77,7 +77,6 @@
          return [UIAccessibilityElement accessibilityElement:element view:view matchingBlock:matchBlock error:error] ? KIFTestStepResultSuccess : KIFTestStepResultWait;
      }];
 }
-
 
 - (UIView*) waitForViewWithAccessibilityIdentifier:(NSString*)identifier
 {
@@ -144,6 +143,20 @@
     [self tapViewWithAccessibilityLabel:label value:nil traits:traits];
 }
 
+- (void) tapViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
+{
+    [self tapViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone];
+
+}
+
+- (void) tapViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits
+{
+    UIView* view = nil;
+    UIAccessibilityElement* element = nil;
+    
+    [self waitForAccessibilityElement:&element view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:YES];
+    [self tapAccessibilityElement:element inView:view];
+}
 - (void) tapViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits
 {
     UIView* view = nil;

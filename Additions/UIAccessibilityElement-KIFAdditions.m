@@ -55,14 +55,16 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     return YES;
 }
 
-+ (BOOL) accessibilityElement:(out UIAccessibilityElement**)foundElement view:(out UIView**)foundView withLabelOrIdentifier:(NSString*)labelOrIdentifier tappable:(BOOL)mustBeTappable error:(out NSError**)error
++ (BOOL) accessibilityElement:(out UIAccessibilityElement**)foundElement view:(out UIView**)foundView withLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable error:(out NSError**)error
 {
-    UIAccessibilityElement* element = [self accessibilityElementMatchingBlock:^BOOL (UIAccessibilityElement* element) {
-                                           return ([element.accessibilityIdentifier isEqualToString:labelOrIdentifier] || [element.accessibilityLabel isEqualToString:labelOrIdentifier]);
-                                       } error:error];
+    UIAccessibilityElement* element = [self accessibilityElementWithLabelOrIdentifier:labelOrIdentifier value:value traits:traits error:error];
+
+    if (!element)
+    {
+        return NO;
+    }
 
     UIView* view = [self viewContainingAccessibilityElement:element tappable:mustBeTappable error:error];
-
     if (!view)
     {
         return NO;
@@ -113,19 +115,44 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     return nil;
 }
 
-+ (UIAccessibilityElement*) accessibilityElementWithLabelOrIdentifier:(NSString*)labelOrIdentifier error:(out NSError**)error;
++ (UIAccessibilityElement*) accessibilityElementWithLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits error:(out NSError**)error
 {
-    UIAccessibilityElement* element = [self accessibilityElementMatchingBlock:^BOOL (UIAccessibilityElement* element) {
-                                           return ([element.accessibilityIdentifier isEqualToString:labelOrIdentifier] || [element.accessibilityLabel isEqualToString:labelOrIdentifier]);
-                                       } error:error];
+    UIAccessibilityElement* element = [[UIApplication sharedApplication] accessibilityElementWithLabelOrIdentifier:labelOrIdentifier accessibilityValue:value traits:traits];
 
     if (element || !error)
     {
         return element;
     }
 
-    *error = [NSError KIFErrorWithFormat:@"Failed to find accessibility element with the label or identifier \"%@\"", labelOrIdentifier];
+    if (value)
+    {
+        element = [[UIApplication sharedApplication] accessibilityElementWithLabel:labelOrIdentifier accessibilityValue:nil traits:traits];
+        // For purposes of a better error message, see if we can find the view, just not a view with the specified value.
+        if (value && element)
+        {
+            *error = [NSError KIFErrorWithFormat:@"Found an accessibility element with the label or identifier  \"%@\", but with the value \"%@\", not \"%@\"", labelOrIdentifier, element.accessibilityValue, value];
+            return nil;
+        }
+    }
+
+    if (traits > UIAccessibilityTraitNone)
+    {
+        // Check the traits, too.
+        element = [[UIApplication sharedApplication] accessibilityElementWithLabel:labelOrIdentifier accessibilityValue:nil traits:UIAccessibilityTraitNone];
+        if (traits != UIAccessibilityTraitNone && element)
+        {
+            *error = [NSError KIFErrorWithFormat:@"Found an accessibility element with the label or identifier \"%@\", but not with the traits \"%llu\"", labelOrIdentifier, traits];
+            return nil;
+        }
+    }
+
+    *error = [NSError KIFErrorWithFormat:@"Failed to find accessibility element with the label or identifier  \"%@\"", labelOrIdentifier];
     return nil;
+}
+
++ (UIAccessibilityElement*) accessibilityElementWithLabelOrIdentifier:(NSString*)labelOrIdentifier error:(out NSError**)error
+{
+    return [UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelOrIdentifier value:Nil traits:UIAccessibilityTraitNone error:error];
 }
 
 + (UIAccessibilityElement*) accessibilityElementMatchingBlock:(BOOL (^)(UIAccessibilityElement*))matchBlock error:(out NSError**)error;

@@ -48,6 +48,21 @@ static const void *KIFRunLoopModesKey = &KIFRunLoopModesKey;
     return nil;
 }
 
+- (UIAccessibilityElement *)accessibilityElementWithLabelOrIdentifier:(NSString *)labelOrIdentifier accessibilityValue:(NSString *)value traits:(UIAccessibilityTraits)traits
+{
+    // Go through the array of windows in reverse order to process the frontmost window first.
+    // When several elements with the same accessibilitylabel are present the one in front will be picked.
+    for (UIWindow *window in [self.windowsWithKeyWindow reverseObjectEnumerator]) {
+        UIAccessibilityElement *element = [window accessibilityElementWithLabelOrIdentifier:labelOrIdentifier accessibilityValue:value traits:traits];
+        if (element) {
+            return element;
+        }
+    }
+    
+    return nil;
+}
+
+
 - (UIAccessibilityElement *)accessibilityElementMatchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock;
 {
     for (UIWindow *window in [self.windowsWithKeyWindow reverseObjectEnumerator]) {
