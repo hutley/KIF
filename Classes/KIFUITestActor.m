@@ -67,8 +67,8 @@
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view withLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits tappable:(BOOL)mustBeTappable
 {
     [self runBlock:^KIFTestStepResult (NSError** error) {
-        return [UIAccessibilityElement accessibilityElement:element view:view withLabelOrIdentifier:labelOrIdentifier value:value traits:traits tappable:mustBeTappable error:error] ? KIFTestStepResultSuccess : KIFTestStepResultWait;
-    }];
+         return [UIAccessibilityElement accessibilityElement:element view:view withLabelOrIdentifier:labelOrIdentifier value:value traits:traits tappable:mustBeTappable error:error] ? KIFTestStepResultSuccess : KIFTestStepResultWait;
+     }];
 }
 
 - (void) waitForAccessibilityElement:(UIAccessibilityElement**)element view:(out UIView**)view matchingBlock:(BOOL (^)(UIAccessibilityElement* element))matchBlock
@@ -81,6 +81,7 @@
 - (UIView*) waitForViewWithAccessibilityIdentifier:(NSString*)identifier
 {
     UIView* view = nil;
+
     [self waitForAccessibilityElement:NULL view:&view matchingBlock:^BOOL (UIAccessibilityElement* element) {
          return [element.accessibilityIdentifier isEqualToString:identifier];
      }];
@@ -90,9 +91,10 @@
 - (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
 {
     UIView* view = nil;
+
     [self waitForAccessibilityElement:NULL view:&view matchingBlock:^BOOL (UIAccessibilityElement* element) {
-        return ([element.accessibilityIdentifier isEqualToString:labelOrIdentifier] || [element.accessibilityLabel isEqualToString:labelOrIdentifier]);
-    }];
+         return ([element.accessibilityIdentifier isEqualToString:labelOrIdentifier] || [element.accessibilityLabel isEqualToString:labelOrIdentifier]);
+     }];
     return view;
 }
 
@@ -146,17 +148,17 @@
 - (void) tapViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
 {
     [self tapViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone];
-
 }
 
 - (void) tapViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits
 {
     UIView* view = nil;
     UIAccessibilityElement* element = nil;
-    
+
     [self waitForAccessibilityElement:&element view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:YES];
     [self tapAccessibilityElement:element inView:view];
 }
+
 - (void) tapViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits
 {
     UIView* view = nil;
@@ -624,7 +626,7 @@
 {
     UIView* viewToSwipe;
     UIAccessibilityElement* element;
-    
+
     [self waitForAccessibilityElement:&element view:&viewToSwipe withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:NO];
     KIFDisplacement swipeDisplacement = KIFDisplacementForSwipingInDirection(direction);
     [self swipeView:viewToSwipe element:element inDirection:direction startLocation:startLocation swipeDisplacement:swipeDisplacement];
@@ -642,31 +644,67 @@
     [self swipeView:viewToSwipe element:element inDirection:direction startLocation:startLocation swipeDisplacement:swipeDisplacement];
 }
 
+- (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation byFractionOfSizeToWindowEdgeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction
+{
+    UIView* viewToSwipe;
+    UIAccessibilityElement* element;
+
+    [self waitForAccessibilityElement:&element view:&viewToSwipe withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:NO];
+
+    CGRect  elementFrame = [viewToSwipe.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToSwipe];
+    CGPoint swipeStart   = CGPointFromViewLocationPointAndRect(startLocation, elementFrame);
+    CGPoint swipeStartInWindow = [viewToSwipe convertPoint:swipeStart toView:viewToSwipe.windowOrIdentityWindow];
+    
+    CGPoint edgeLocation = CGPointZero;
+    CGRect  windowFrame  = viewToSwipe.windowOrIdentityWindow.frame;
+    switch (direction)
+    {
+        case KIFSwipeDirectionRight:
+            edgeLocation = CGPointMake(windowFrame.size.width, swipeStartInWindow.y);
+            break;
+        case KIFSwipeDirectionUp:
+            edgeLocation = CGPointMake(swipeStartInWindow.x, 0);
+            break;
+        case KIFSwipeDirectionLeft:
+            edgeLocation = CGPointMake(0, swipeStartInWindow.y);
+            break;
+        case KIFSwipeDirectionDown:
+            edgeLocation = CGPointMake(swipeStartInWindow.x, windowFrame.size.height);
+            break;
+        default:
+            break;
+    }
+
+    KIFDisplacement swipeDisplacement = KIFDisplacementForSwipingInDirectionByPoints(direction, fabs(swipeStartInWindow.x-edgeLocation.x)*horizontalFraction, fabs(swipeStartInWindow.y-edgeLocation.y)*verticalFraction);
+
+    [self swipeView:viewToSwipe element:element inDirection:direction startLocation:startLocation swipeDisplacement:swipeDisplacement];
+}
 
 - (void) swipeView:(UIView*)viewToSwipe element:(UIAccessibilityElement*)element inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation swipeDisplacement:(KIFDisplacement)swipeDisplacement
 {
     const NSUInteger kNumberOfPointsInSwipePath = 20;
-    
+
     // The original version of this came from http://groups.google.com/group/kif-framework/browse_thread/thread/df3f47eff9f5ac8c
-    
+
     // Within this method, all geometry is done in the coordinate system of the view to swipe.
-    CGRect          elementFrame      = [viewToSwipe.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToSwipe];
-    CGPoint         swipeStart        = CGPointFromViewLocationPointAndRect(startLocation, elementFrame);
+    CGRect  elementFrame = [viewToSwipe.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToSwipe];
+    CGPoint swipeStart   = CGPointFromViewLocationPointAndRect(startLocation, elementFrame);
+
     [viewToSwipe dragFromPoint:swipeStart displacement:swipeDisplacement steps:kNumberOfPointsInSwipePath];
 }
 
 - (void) scrollViewWithAccessbilityLabelOrIdentifier:(NSString*)identifierToScroll toViewWithAccessibilityLabelOrIdentifier:(NSString*)labelToScrollTo
 {
     UIScrollView* scrollView = (id)[self waitForViewWithAccessibilityLabelOrIdentifier:identifierToScroll];
-    CGFloat       direction  = 0.5 ;     //SCROLL UP
-    BOOL elementOnScreen     = NO;
-    CGPoint lastOffset = scrollView.contentOffset;
-    
-    
+    CGFloat       direction  = 0.5;      //SCROLL UP
+    BOOL    elementOnScreen  = NO;
+    CGPoint lastOffset       = scrollView.contentOffset;
+
+
     while (!elementOnScreen)
     {
         UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:NULL];
-        
+
         if (elementToScrollTo)
         {
             //access frame doesn't account for device orientation so convert...
@@ -674,21 +712,21 @@
             direction       = (accessibilityFrame.origin.y -scrollView.contentOffset.y > scrollView.frame.size.height ? -0.5 : 0.5);
             elementOnScreen = (accessibilityFrame.origin.y >= 0.0 && accessibilityFrame.origin.y -scrollView.contentOffset.y <= scrollView.frame.size.height);
         }
-        
+
         if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
         {
             [self scrollViewWithAccessibilityLabelOrIdentifier:scrollView.accessibilityIdentifier byFractionOfSizeHorizontal:0.0 vertical:direction]; //if try for a 100% then it fails to scroll
-            
+
             //if we are not moving, try the other direction.
             if (lastOffset.y == scrollView.contentOffset.y && lastOffset.x == scrollView.contentOffset.x)
             {
                 direction = -direction;
             }
-            
+
             lastOffset = scrollView.contentOffset;
         }
     }
-    
+
     [self waitForViewWithAccessibilityLabelOrIdentifier:labelToScrollTo];
 }
 
@@ -710,7 +748,7 @@
     CGPoint scrollStart = CGPointCenteredInRect(elementFrame);
     scrollStart.x -= scrollDisplacement.x / 2;
     scrollStart.y -= scrollDisplacement.y / 2;
-    
+
     //NSLog (@"SCROLL START: %f,%f", scrollStart.x, scrollStart.y);
     //NSLog (@"SCROLL DISTANCE: %f,%f", scrollDisplacement.x, scrollDisplacement.y);
 

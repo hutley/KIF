@@ -12,6 +12,7 @@
 #import "UIView-KIFAdditions.h"
 
 #define tester KIFActorWithClass(KIFUITestActor)
+//TODO: comments
 
 /*!
  @enum KIFSwipeDirection
@@ -54,6 +55,7 @@ typedef NS_ENUM(NSUInteger, KIFViewLocation)
     KIFViewLocationRightCenter,
     KIFViewLocationRightBottom
 };
+
 
 static inline CGPoint CGPointFromViewLocationPointAndRect(KIFViewLocation location, CGRect rect)
 {
@@ -241,7 +243,6 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param label The accessibility label of the element to tap.
  */
 - (void) tapViewWithAccessibilityLabel:(NSString*)label;
-
 - (void) tapViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
 
 /*!
@@ -392,7 +393,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
 
 /*!
  @abstract Swipes a particular view in the view hierarchy in the given direction.
- @discussion The view will get the view with the specified accessibility label and swipe the screen in the given direction from the view's center.
+ @discussion The view will get the view with the specified accessibility label and swipe the screen in the given direction from the view's center. The swipe distance is defaulted to 200 points in the swipe direction.
  @param label The accessibility label of the view to swipe.
  @param direction The direction in which to swipe.
  */
@@ -400,7 +401,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
 
 /*!
  @abstract Swipes a particular view in the view hierarchy in the given direction.
- @discussion The view will get the view with the specified accessibility label and swipe the screen in the given direction from the specified start location.
+ @discussion The view will get the view with the specified accessibility label and swipe the screen in the given direction from the specified start location. The swipe distance is defaulted to 200 points in the swipe direction.
  @param label The accessibility label of the view to swipe.
  @param direction The direction in which to swipe.
  @param startLocation The location in the view in which to start the swipe.
@@ -411,7 +412,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
 /*!
  @abstract Swipes a particular view in the view hierarchy in the given direction.
  @discussion The view will get the view with the specified accessibility label and swipe the screen in the given direction from the specified start location.
- @param label The accessibility label of the view to swipe.
+ @param labelOrIdentifier The accessibility label or identifier of the view to swipe.
  @param direction The direction in which to swipe.
  @param startLocation The location in the view in which to start the swipe.
  @param horizontalFraction The horizontal displacement of the swipe action, as a fraction of the width of the view.
@@ -420,9 +421,20 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
 - (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation byFractionOfSizeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction;
 
 /*!
+ @abstract Swipes a particular view in the view hierarchy in the given direction.
+ @discussion The view will get the view with the specified accessibility label and swipe the screen in the given direction from the specified start location towards the edge of the view window by a fraction of the distance between the edge of the view and the edge of the screen.
+ @param labelOrIdentifier The accessibility label or identifier of the view to swipe.
+ @param direction The direction in which to swipe.
+ @param startLocation The location in the view in which to start the swipe.
+ @param horizontalFraction The horizontal displacement of the swipe action, as a fraction of the distance between the edge of the view and the edge of the screen.
+ @param verticalFraction The vertical displacement of the swipe action, as a fraction of the distance between the edge of the view and the edge of the screen.
+ */
+
+- (void) swipeViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier inDirection:(KIFSwipeDirection)direction startLocation:(KIFViewLocation)startLocation byFractionOfSizeToWindowEdgeHorizontal:(CGFloat)horizontalFraction vertical:(CGFloat)verticalFraction;
+/*!
  @abstract Scrolls a particular view in the view hierarchy by an amount indicated as a fraction of its size.
  @discussion The view will get the view with the specified accessibility label and scroll it by the indicated fraction of its size, with the scroll centered on the center of the view.
- @param label The accessibility label of the view to scroll.
+ @param labelOrIdentifier The accessibility label or identifier of the view to swipe.
  @param horizontalFraction The horizontal displacement of the scroll action, as a fraction of the width of the view.
  @param verticalFraction The vertical displacement of the scroll action, as a fraction of the height of the view.
  */
