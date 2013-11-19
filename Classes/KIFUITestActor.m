@@ -98,6 +98,15 @@
     return view;
 }
 
+- (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits
+{
+    UIView* view = nil;
+
+    [self waitForAccessibilityElement:NULL view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:NO];
+    return view;
+}
+
+
 - (void) waitForAbsenceOfViewWithAccessibilityLabel:(NSString*)label
 {
     [self waitForAbsenceOfViewWithAccessibilityLabel:label traits:UIAccessibilityTraitNone];
