@@ -90,22 +90,20 @@
 
 - (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
 {
-    UIView* view = nil;
-
-    [self waitForAccessibilityElement:NULL view:&view matchingBlock:^BOOL (UIAccessibilityElement* element) {
-         return ([element.accessibilityIdentifier isEqualToString:labelOrIdentifier] || [element.accessibilityLabel isEqualToString:labelOrIdentifier]);
-     }];
-    return view;
+    return [self waitForViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:UIAccessibilityTraitNone mustBeTappable:NO];
 }
 
 - (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits
 {
-    UIView* view = nil;
-
-    [self waitForAccessibilityElement:NULL view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:NO];
-    return view;
+    return [self waitForViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:traits mustBeTappable:NO];
 }
 
+- (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits mustBeTappable:(BOOL)tappable
+{
+    UIView* view = nil;
+    [self waitForAccessibilityElement:NULL view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:tappable];
+    return view;
+}
 
 - (void) waitForAbsenceOfViewWithAccessibilityLabel:(NSString*)label
 {
@@ -708,18 +706,20 @@
     CGFloat       direction  = 0.5;      //SCROLL UP
     BOOL    elementOnScreen  = NO;
     CGPoint lastOffset       = scrollView.contentOffset;
-
+    NSError* error = nil;
 
     while (!elementOnScreen)
     {
-        UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:NULL];
+        UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:&error];
 
         if (elementToScrollTo)
         {
             //access frame doesn't account for device orientation so convert...
             CGRect accessibilityFrame = [scrollView.window convertRect:elementToScrollTo.accessibilityFrame toView:scrollView];
             direction       = (accessibilityFrame.origin.y -scrollView.contentOffset.y > scrollView.frame.size.height ? -0.5 : 0.5);
-            elementOnScreen = (accessibilityFrame.origin.y >= 0.0 && accessibilityFrame.origin.y -scrollView.contentOffset.y <= scrollView.frame.size.height);
+            elementOnScreen = (accessibilityFrame.origin.y >= 0.0
+                               && accessibilityFrame.origin.y - scrollView.contentOffset.y <= scrollView.frame.size.height
+                               && accessibilityFrame.origin.y - scrollView.contentOffset.y >= 0.0);
         }
 
         if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
@@ -758,8 +758,8 @@
     scrollStart.x -= scrollDisplacement.x / 2;
     scrollStart.y -= scrollDisplacement.y / 2;
 
-    //NSLog (@"SCROLL START: %f,%f", scrollStart.x, scrollStart.y);
-    //NSLog (@"SCROLL DISTANCE: %f,%f", scrollDisplacement.x, scrollDisplacement.y);
+    NSLog (@"SCROLL START: %f,%f", scrollStart.x, scrollStart.y);
+    NSLog (@"SCROLL DISTANCE: %f,%f", scrollDisplacement.x, scrollDisplacement.y);
 
     [viewToScroll dragFromPoint:scrollStart displacement:scrollDisplacement steps:kNumberOfPointsInScrollPath];
 }

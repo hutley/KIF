@@ -120,6 +120,8 @@ typedef struct __GSEvent * GSEventRef;
             accessibilityValue = [(NSAttributedString *)accessibilityValue string];
         }
         
+        //if (element.accessibilityIdentifier)
+            //NSLog(@"%@", element.accessibilityIdentifier);
         BOOL labelsMatch = [element.accessibilityLabel isEqual:labelOrIdentifier];
         BOOL identifiersMatch = [element.accessibilityIdentifier isEqual:labelOrIdentifier];
         BOOL traitsMatch = ((element.accessibilityTraits) & traits) == traits;
@@ -424,7 +426,7 @@ typedef struct __GSEvent * GSEventRef;
         path[i] = CGPointMake(startPoint.x + (progress * displacement.x),
                               startPoint.y + (progress * displacement.y));
         
-        //NSLog (@"PATH_POINT_%i: %f,%f", i, path[i].x, path[i].y);
+        NSLog (@"PATH_POINT_%i: %f,%f", i, path[i].x, path[i].y);
 
     }
     
@@ -459,7 +461,7 @@ typedef struct __GSEvent * GSEventRef;
         CGPoint dragPoint =[self.window convertPoint:points[pointIndex] fromView:self];
         dragPoint = CGPointMake(dragPoint.x-changeX, dragPoint.y-changeY);
         [touch setLocationInWindow:dragPoint];
-        //NSLog(@"DRAG_POINT_%i: %f %f", pointIndex, dragPoint.x, dragPoint.y);
+        NSLog(@"DRAG_POINT_%i: %f %f", pointIndex, dragPoint.x, dragPoint.y);
 
         [touch setPhase:UITouchPhaseMoved];
                 UIEvent *eventDrag = [self _eventWithTouch:touch];

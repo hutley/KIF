@@ -48,11 +48,12 @@ MAKE_CATEGORIES_LOADABLE(UIScrollView_KIFAdditions)
         needsUpdate = YES;
     }
     
+    /*
     if (needsUpdate) {
         offsetPoint = [self.window convertPoint:offsetPoint toView:self.superview];
         [self setContentOffset:offsetPoint animated:animated];
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.2, false);
-    }
+    }*/
 }
 
 @end

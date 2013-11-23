@@ -126,7 +126,7 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
 
     if (value)
     {
-        element = [[UIApplication sharedApplication] accessibilityElementWithLabel:labelOrIdentifier accessibilityValue:nil traits:traits];
+        element = [[UIApplication sharedApplication] accessibilityElementWithLabelOrIdentifier:labelOrIdentifier accessibilityValue:nil traits:traits];
         // For purposes of a better error message, see if we can find the view, just not a view with the specified value.
         if (value && element)
         {
@@ -152,7 +152,7 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
 
 + (UIAccessibilityElement*) accessibilityElementWithLabelOrIdentifier:(NSString*)labelOrIdentifier error:(out NSError**)error
 {
-    return [UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelOrIdentifier value:Nil traits:UIAccessibilityTraitNone error:error];
+    return [UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone error:error];
 }
 
 + (UIAccessibilityElement*) accessibilityElementMatchingBlock:(BOOL (^)(UIAccessibilityElement*))matchBlock error:(out NSError**)error;
@@ -255,7 +255,8 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     {
         if (error)
         {
-            *error = [NSError KIFErrorWithFormat:@"Accessibility element with label \"%@\" is not tappable. It may be blocked by other views.", element.accessibilityLabel];
+            NSString* label = (element.accessibilityIdentifier ? element.accessibilityIdentifier : element.accessibilityLabel);
+            *error = [NSError KIFErrorWithFormat:@"Accessibility element with label \"%@\" is not tappable. It may be blocked by other views.", label];
         }
         return nil;
     }
