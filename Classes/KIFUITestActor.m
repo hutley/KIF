@@ -276,7 +276,7 @@
 - (void) enterTextIntoCurrentFirstResponder:(NSString*)text;
 {
     // Wait for the keyboard
-    [self waitForTimeInterval:0.5];
+    [self waitForTimeInterval:1.0];
     [self enterTextIntoCurrentFirstResponder:text fallbackView:nil];
 }
 
@@ -312,18 +312,22 @@
     }
 }
 
-- (void) enterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label
+- (void) enterText:(NSString*)text intoViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
 {
-    return [self enterText:text intoViewWithAccessibilityLabel:label traits:UIAccessibilityTraitNone expectedResult:nil];
+    return [self enterText:text intoViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:UIAccessibilityTraitNone expectedResult:nil];
 }
 
-- (void) enterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult
+- (void) enterText:(NSString*)text intoViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult
 {
     UIView* view = nil;
     UIAccessibilityElement* element = nil;
 
-    [self waitForAccessibilityElement:&element view:&view withLabel:label value:nil traits:traits tappable:YES];
+    [self waitForAccessibilityElement:&element view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:YES];
     [self tapAccessibilityElement:element inView:view];
+    
+    //wait for any other animations -- like searchbar etc
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.5, false);
+
     [self enterTextIntoCurrentFirstResponder:text fallbackView:view];
 
     // We will perform some additional validation if the view is UITextField or UITextView.
@@ -347,17 +351,17 @@
 }
 
 
-- (void) clearTextFromViewWithAccessibilityLabel:(NSString*)label
+- (void) clearTextFromViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
 {
-    [self clearTextFromViewWithAccessibilityLabel:label traits:UIAccessibilityTraitNone];
+    [self clearTextFromViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:UIAccessibilityTraitNone];
 }
 
-- (void) clearTextFromViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits
+- (void) clearTextFromViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits
 {
     UIView* view = nil;
     UIAccessibilityElement* element = nil;
 
-    [self waitForAccessibilityElement:&element view:&view withLabel:label value:nil traits:traits tappable:YES];
+    [self waitForAccessibilityElement:&element view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:YES];
 
     NSUInteger numberOfCharacters = [view respondsToSelector:@selector(text)] ? [(UITextField*)view text].length : element.accessibilityValue.length;
 
@@ -367,19 +371,19 @@
         [text appendString:@"\b"];
     }
 
-    [self enterText:text intoViewWithAccessibilityLabel:label traits:UIAccessibilityTraitNone expectedResult:@""];
+    [self enterText:text intoViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:UIAccessibilityTraitNone expectedResult:@""];
 }
 
-- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label
+- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
 {
-    [self clearTextFromViewWithAccessibilityLabel:label];
-    [self enterText:text intoViewWithAccessibilityLabel:label];
+    [self clearTextFromViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier];
+    [self enterText:text intoViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier];
 }
 
-- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult
+- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult
 {
-    [self clearTextFromViewWithAccessibilityLabel:label traits:traits];
-    [self enterText:text intoViewWithAccessibilityLabel:label traits:traits expectedResult:expectedResult];
+    [self clearTextFromViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:traits];
+    [self enterText:text intoViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:traits expectedResult:expectedResult];
 }
 
 - (void) selectPickerViewRowWithTitle:(NSString*)title
@@ -703,11 +707,12 @@
 - (void) scrollViewWithAccessbilityLabelOrIdentifier:(NSString*)identifierToScroll toViewWithAccessibilityLabelOrIdentifier:(NSString*)labelToScrollTo
 {
     UIScrollView* scrollView = (id)[self waitForViewWithAccessibilityLabelOrIdentifier:identifierToScroll];
-    CGFloat       direction  = 0.5;      //SCROLL UP
+    CGFloat       direction  = -0.5;      //SCROLL DOWN
     BOOL    elementOnScreen  = NO;
     CGPoint lastOffset       = scrollView.contentOffset;
     NSError* error = nil;
-
+    BOOL scrolled = NO;
+    
     while (!elementOnScreen)
     {
         UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:&error];
@@ -716,16 +721,16 @@
         {
             //access frame doesn't account for device orientation so convert...
             CGRect accessibilityFrame = [scrollView.window convertRect:elementToScrollTo.accessibilityFrame toView:scrollView];
-            direction       = (accessibilityFrame.origin.y -scrollView.contentOffset.y > scrollView.frame.size.height ? -0.5 : 0.5);
+            direction       = (accessibilityFrame.origin.y - scrollView.contentOffset.y > scrollView.frame.size.height - accessibilityFrame.size.height ? -0.5 : 0.5);
             elementOnScreen = (accessibilityFrame.origin.y >= 0.0
-                               && accessibilityFrame.origin.y - scrollView.contentOffset.y <= scrollView.frame.size.height
+                               && accessibilityFrame.origin.y - scrollView.contentOffset.y <= scrollView.frame.size.height - accessibilityFrame.size.height
                                && accessibilityFrame.origin.y - scrollView.contentOffset.y >= 0.0);
         }
 
         if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
         {
             [self scrollViewWithAccessibilityLabelOrIdentifier:scrollView.accessibilityIdentifier byFractionOfSizeHorizontal:0.0 vertical:direction]; //if try for a 100% then it fails to scroll
-
+            scrolled = YES;
             //if we are not moving, try the other direction.
             if (lastOffset.y == scrollView.contentOffset.y && lastOffset.x == scrollView.contentOffset.x)
             {
@@ -736,6 +741,11 @@
         }
     }
 
+    if (scrolled)
+    {
+        //wait for the scroll animation to complete...
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.5, false);
+    }
     [self waitForViewWithAccessibilityLabelOrIdentifier:labelToScrollTo];
 }
 

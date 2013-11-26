@@ -328,7 +328,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param text The text to enter.
  @param label The accessibility label of the element to type into.
  */
-- (void) enterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label;
+- (void) enterText:(NSString*)text intoViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
 
 /*!
  @abstract Enters text into a particular view in the view hierarchy.
@@ -338,13 +338,13 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @param traits The accessibility traits of the element to type into. Elements that do not include at least these traits are ignored.
  @param expectedResult What the text value should be after entry, including any formatting done by the field. If this is nil, the "text" parameter will be used.
  */
-- (void) enterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult;
+- (void) enterText:(NSString*)text intoViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult;
 
-- (void) clearTextFromViewWithAccessibilityLabel:(NSString*)label;
-- (void) clearTextFromViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits;
+- (void) clearTextFromViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
+- (void) clearTextFromViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits;
 
-- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label;
-- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabel:(NSString*)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult;
+- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
+- (void) clearTextFromAndThenEnterText:(NSString*)text intoViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits expectedResult:(NSString*)expectedResult;
 
 /*!
  @abstract ASelects an item from a currently visible picker view.

@@ -242,7 +242,7 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     }
 
     // If we don't require tappability, at least make sure it's not hidden
-    if ([view isHidden])
+    if ([view isHidden] || view.alpha == 0.0)
     {
         if (error)
         {
