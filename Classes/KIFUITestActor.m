@@ -713,6 +713,8 @@
     NSError* error = nil;
     BOOL scrolled = NO;
     
+    NSUInteger directionChanges = 0;
+    
     while (!elementOnScreen)
     {
         UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:&error];
@@ -729,12 +731,20 @@
 
         if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
         {
+
+            if (directionChanges > 5) //we got stuck
+            {
+                //wait for the scroll animation to complete...
+                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.5, false);
+                directionChanges = 0;
+            }
             [self scrollViewWithAccessibilityLabelOrIdentifier:scrollView.accessibilityIdentifier byFractionOfSizeHorizontal:0.0 vertical:direction]; //if try for a 100% then it fails to scroll
             scrolled = YES;
             //if we are not moving, try the other direction.
             if (lastOffset.y == scrollView.contentOffset.y && lastOffset.x == scrollView.contentOffset.x)
             {
                 direction = -direction;
+                directionChanges++;
             }
 
             lastOffset = scrollView.contentOffset;
