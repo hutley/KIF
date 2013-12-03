@@ -363,7 +363,7 @@
 
     [self waitForAccessibilityElement:&element view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:YES];
 
-    NSUInteger numberOfCharacters = [view respondsToSelector:@selector(text)] ? [(UITextField*)view text].length : element.accessibilityValue.length;
+    NSUInteger numberOfCharacters = [element respondsToSelector:@selector(text)] ? [(UITextField*)element text].length : element.accessibilityValue.length;
 
     NSMutableString* text = [NSMutableString string];
     for (NSInteger i = 0; i < numberOfCharacters; i++)
