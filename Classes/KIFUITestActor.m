@@ -134,10 +134,44 @@
          KIFTestWaitCondition(view, error, @"Cannot find view containing accessibility element with the label \"%@\"", label);
 
          // Hidden views count as absent
-         KIFTestWaitCondition([view isHidden], error, @"Accessibility element with label \"%@\" is visible and not hidden.", label);
+         KIFTestWaitCondition(view.isHidden || !view.isProbablyTappable, error, @"Accessibility element with label \"%@\" is visible and not hidden.", label);
 
          return KIFTestStepResultSuccess;
      }];
+}
+
+- (void) waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
+{
+    [self waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:UIAccessibilityTraitNone];
+}
+
+- (void) waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits
+{
+    [self waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier value:nil traits:traits];
+}
+
+- (void) waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits
+{
+    [self runBlock:^KIFTestStepResult (NSError** error) {
+        // If the app is ignoring interaction events, then wait before doing our analysis
+        KIFTestWaitCondition(![[UIApplication sharedApplication] isIgnoringInteractionEvents], error, @"Application is ignoring interaction events.");
+        
+        // If the element can't be found, then we're done
+        UIAccessibilityElement* element = [[UIApplication sharedApplication] accessibilityElementWithLabelOrIdentifier:labelOrIdentifier accessibilityValue:value traits:traits];
+        if (!element)
+        {
+            return KIFTestStepResultSuccess;
+        }
+        
+        UIView* view = [UIAccessibilityElement viewContainingAccessibilityElement:element];
+        // If we found an element, but it's not associated with a view, then something's wrong. Wait it out and try again.
+        KIFTestWaitCondition(view, error, @"Cannot find view containing accessibility element with the label or identifier \"%@\"", labelOrIdentifier);
+        
+        // Hidden views count as absent
+        KIFTestWaitCondition(view.isHidden || !view.isProbablyTappable, error, @"Accessibility element with label \"%@\" is visible and not hidden.", labelOrIdentifier);
+        
+        return KIFTestStepResultSuccess;
+    }];
 }
 
 

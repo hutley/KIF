@@ -200,6 +200,11 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  */
 - (void) waitForAbsenceOfViewWithAccessibilityLabel:(NSString*)label value:(NSString*)value traits:(UIAccessibilityTraits)traits;
 
+- (void) waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
+- (void) waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits;
+- (void) waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits;
+
+
 /*!
  @abstract Waits until a view or accessibility element is present and available for tapping.
  @discussion The view or accessibility element with the given label is found in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Whether or not a view is tappable is based on -[UIView hitTest:].
