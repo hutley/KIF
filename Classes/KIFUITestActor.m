@@ -101,6 +101,7 @@
 - (UIView*) waitForViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier traits:(UIAccessibilityTraits)traits mustBeTappable:(BOOL)tappable
 {
     UIView* view = nil;
+
     [self waitForAccessibilityElement:NULL view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:tappable];
     return view;
 }
@@ -153,25 +154,25 @@
 - (void) waitForAbsenceOfViewWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier value:(NSString*)value traits:(UIAccessibilityTraits)traits
 {
     [self runBlock:^KIFTestStepResult (NSError** error) {
-        // If the app is ignoring interaction events, then wait before doing our analysis
-        KIFTestWaitCondition(![[UIApplication sharedApplication] isIgnoringInteractionEvents], error, @"Application is ignoring interaction events.");
-        
-        // If the element can't be found, then we're done
-        UIAccessibilityElement* element = [[UIApplication sharedApplication] accessibilityElementWithLabelOrIdentifier:labelOrIdentifier accessibilityValue:value traits:traits];
-        if (!element)
-        {
-            return KIFTestStepResultSuccess;
-        }
-        
-        UIView* view = [UIAccessibilityElement viewContainingAccessibilityElement:element];
-        // If we found an element, but it's not associated with a view, then something's wrong. Wait it out and try again.
-        KIFTestWaitCondition(view, error, @"Cannot find view containing accessibility element with the label or identifier \"%@\"", labelOrIdentifier);
-        
-        // Hidden views count as absent
-        KIFTestWaitCondition(view.isHidden || !view.isProbablyTappable, error, @"Accessibility element with label \"%@\" is visible and not hidden.", labelOrIdentifier);
-        
-        return KIFTestStepResultSuccess;
-    }];
+         // If the app is ignoring interaction events, then wait before doing our analysis
+         KIFTestWaitCondition(![[UIApplication sharedApplication] isIgnoringInteractionEvents], error, @"Application is ignoring interaction events.");
+
+         // If the element can't be found, then we're done
+         UIAccessibilityElement* element = [[UIApplication sharedApplication] accessibilityElementWithLabelOrIdentifier:labelOrIdentifier accessibilityValue:value traits:traits];
+         if (!element)
+         {
+             return KIFTestStepResultSuccess;
+         }
+
+         UIView* view = [UIAccessibilityElement viewContainingAccessibilityElement:element];
+         // If we found an element, but it's not associated with a view, then something's wrong. Wait it out and try again.
+         KIFTestWaitCondition(view, error, @"Cannot find view containing accessibility element with the label or identifier \"%@\"", labelOrIdentifier);
+
+         // Hidden views count as absent
+         KIFTestWaitCondition(view.isHidden || !view.isProbablyTappable, error, @"Accessibility element with label \"%@\" is visible and not hidden.", labelOrIdentifier);
+
+         return KIFTestStepResultSuccess;
+     }];
 }
 
 
@@ -358,7 +359,7 @@
 
     [self waitForAccessibilityElement:&element view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:YES];
     [self tapAccessibilityElement:element inView:view];
-    
+
     //wait for any other animations -- like searchbar etc
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.5, false);
 
@@ -696,10 +697,10 @@
 
     [self waitForAccessibilityElement:&element view:&viewToSwipe withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:NO];
 
-    CGRect  elementFrame = [viewToSwipe.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToSwipe];
-    CGPoint swipeStart   = CGPointFromViewLocationPointAndRect(startLocation, elementFrame);
+    CGRect  elementFrame       = [viewToSwipe.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToSwipe];
+    CGPoint swipeStart         = CGPointFromViewLocationPointAndRect(startLocation, elementFrame);
     CGPoint swipeStartInWindow = [viewToSwipe convertPoint:swipeStart toView:viewToSwipe.windowOrIdentityWindow];
-    
+
     CGPoint edgeLocation = CGPointZero;
     CGRect  windowFrame  = viewToSwipe.windowOrIdentityWindow.frame;
     switch (direction)
@@ -742,13 +743,13 @@
 {
     UIScrollView* scrollView = (id)[self waitForViewWithAccessibilityLabelOrIdentifier:identifierToScroll];
     CGFloat       direction  = -0.5;      //SCROLL DOWN
-    BOOL    elementOnScreen  = NO;
-    CGPoint lastOffset       = scrollView.contentOffset;
-    NSError* error = nil;
-    BOOL scrolled = NO;
-    
+    BOOL     elementOnScreen = NO;
+    CGPoint  lastOffset      = scrollView.contentOffset;
+    NSError* error    = nil;
+    BOOL     scrolled = NO;
+
     NSUInteger directionChanges = 0;
-    
+
     while (!elementOnScreen)
     {
         UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:&error];
@@ -761,11 +762,17 @@
             elementOnScreen = (accessibilityFrame.origin.y >= 0.0
                                && accessibilityFrame.origin.y - scrollView.contentOffset.y <= scrollView.frame.size.height - accessibilityFrame.size.height
                                && accessibilityFrame.origin.y - scrollView.contentOffset.y >= 0.0);
+
+            if (!elementOnScreen)
+            {
+                elementOnScreen = (accessibilityFrame.origin.x >= 0.0
+                                   && accessibilityFrame.origin.x - scrollView.contentOffset.x <= scrollView.frame.size.height - accessibilityFrame.size.height
+                                   && accessibilityFrame.origin.x - scrollView.contentOffset.x >= 0.0);
+            }
         }
 
         if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
         {
-
             if (directionChanges > 5) //we got stuck
             {
                 //wait for the scroll animation to complete...
@@ -812,8 +819,8 @@
     scrollStart.x -= scrollDisplacement.x / 2;
     scrollStart.y -= scrollDisplacement.y / 2;
 
-    NSLog (@"SCROLL START: %f,%f", scrollStart.x, scrollStart.y);
-    NSLog (@"SCROLL DISTANCE: %f,%f", scrollDisplacement.x, scrollDisplacement.y);
+    NSLog(@"SCROLL START: %f,%f", scrollStart.x, scrollStart.y);
+    NSLog(@"SCROLL DISTANCE: %f,%f", scrollDisplacement.x, scrollDisplacement.y);
 
     [viewToScroll dragFromPoint:scrollStart displacement:scrollDisplacement steps:kNumberOfPointsInScrollPath];
 }
