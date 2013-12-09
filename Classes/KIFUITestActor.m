@@ -756,17 +756,21 @@
 
         if (elementToScrollTo)
         {
+            
+            CGFloat height = (scrollView.frame.size.height > scrollView.superview.frame.size.height ? scrollView.superview.frame.size.height : scrollView.frame.size.height);
+            CGFloat width = (scrollView.frame.size.width > scrollView.superview.frame.size.width ? scrollView.superview.frame.size.width : scrollView.frame.size.width);
+            
             //access frame doesn't account for device orientation so convert...
             CGRect accessibilityFrame = [scrollView.window convertRect:elementToScrollTo.accessibilityFrame toView:scrollView];
-            direction       = (accessibilityFrame.origin.y - scrollView.contentOffset.y > scrollView.frame.size.height - accessibilityFrame.size.height ? -0.5 : 0.5);
+            direction       = (accessibilityFrame.origin.y - scrollView.contentOffset.y > height - accessibilityFrame.size.height ? -0.5 : 0.5);
             elementOnScreen = (accessibilityFrame.origin.y >= 0.0
-                               && accessibilityFrame.origin.y - scrollView.contentOffset.y <= scrollView.frame.size.height - accessibilityFrame.size.height
+                               && accessibilityFrame.origin.y - scrollView.contentOffset.y <= height - accessibilityFrame.size.height
                                && accessibilityFrame.origin.y - scrollView.contentOffset.y >= 0.0);
 
-            if (!elementOnScreen)
+            if (elementOnScreen)
             {
                 elementOnScreen = (accessibilityFrame.origin.x >= 0.0
-                                   && accessibilityFrame.origin.x - scrollView.contentOffset.x <= scrollView.frame.size.height - accessibilityFrame.size.height
+                                   && accessibilityFrame.origin.x - scrollView.contentOffset.x <= width - accessibilityFrame.size.width
                                    && accessibilityFrame.origin.x - scrollView.contentOffset.x >= 0.0);
             }
         }
@@ -810,9 +814,19 @@
     [self waitForAccessibilityElement:&element view:&viewToScroll withLabelOrIdentifier:labelOrIdentifier value:Nil traits:UIAccessibilityTraitNone tappable:NO];
 
     // Within this method, all geometry is done in the coordinate system of the view to scroll.
-
+    
     CGRect elementFrame = [viewToScroll.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToScroll];
-
+    
+    //check to see if the scroller is completely shown within the bounds of its superview (aka ignore offscreen buffer areas).
+    CGRect superFrame = viewToScroll.superview.frame;
+    if (superFrame.size.height < elementFrame.size.height)
+    {
+        elementFrame.size.height = superFrame.size.height;
+    }
+    if (superFrame.size.width < elementFrame.size.width)
+    {
+        elementFrame.size.width = superFrame.size.width;
+    }
     KIFDisplacement scrollDisplacement = CGPointMake(elementFrame.size.width * horizontalFraction, elementFrame.size.height * verticalFraction);
 
     CGPoint scrollStart = CGPointCenteredInRect(elementFrame);
