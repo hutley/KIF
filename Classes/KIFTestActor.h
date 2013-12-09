@@ -12,7 +12,7 @@
 #define KIFActorWithClass(clazz) [clazz actorInFile:[NSString stringWithUTF8String:__FILE__] atLine:__LINE__ delegate:self]
 
 /*!
- @define KIFTestCondition
+ @define KIFTestCondition AKA KIFTestConditionIsTrue
  @abstract Tests a condition and returns a failure result if the condition isn't true.
  @discussion This is a useful macro for quickly evaluating conditions in a test step. If the condition is false then the current test step will be aborted with a failure result.
  @param condition The condition to test.
@@ -27,6 +27,7 @@ if (error) { \
 return KIFTestStepResultFailure; \
 } \
 })
+
 
 /*!
  @define KIFTestWaitCondition
