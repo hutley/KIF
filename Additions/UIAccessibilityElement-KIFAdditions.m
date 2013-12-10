@@ -166,6 +166,17 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     return nil;
 }
 
++ (NSArray*) accessibilityElementsMatchingBlock:(BOOL (^)(UIAccessibilityElement*))matchBlock error:(out NSError**)error;
+{
+    NSArray* elements = [[UIApplication sharedApplication] accessibilityElementsMatchingBlock:matchBlock];
+    if (elements || !error)
+    {
+        return elements;
+    }
+    *error = [NSError KIFErrorWithFormat:@"Failed to find accessibility elements with the match block \"%@\"", matchBlock];
+    return nil;
+}
+
 + (BOOL) accessibilityElement:(out UIAccessibilityElement**)foundElement view:(out UIView**)foundView matchingBlock:(BOOL (^)(UIAccessibilityElement*))matchBlock error:(out NSError**)error;
 {
     UIAccessibilityElement* element = [self accessibilityElementMatchingBlock:matchBlock error:error];
