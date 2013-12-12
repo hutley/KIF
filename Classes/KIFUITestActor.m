@@ -16,6 +16,7 @@
 #import "NSError-KIFAdditions.h"
 #import "KIFTypist.h"
 #import <objc/runtime.h>
+#import <objc/message.h>
 
 @implementation KIFUITestActor
 
@@ -613,6 +614,25 @@
         count++;
     }
     
+    
+}
+
+- (void) rotateToInterfaceOrientation: (UIInterfaceOrientation) toInterfaceOrientation {
+    
+    [self waitForBlock:^KIFTestStepResult(NSError **error) {
+        if( [UIApplication sharedApplication].statusBarOrientation != toInterfaceOrientation ) {
+            UIDevice* device = [UIDevice currentDevice];
+            SEL message = NSSelectorFromString(@"setOrientation:");
+            
+            if( [device respondsToSelector: message] ) {
+                objc_msgSend(device, message, toInterfaceOrientation);
+            }
+        }
+        return KIFTestStepResultSuccess;
+        
+    } untilCondition:^KIFTestStepResult{
+        return ( [UIApplication sharedApplication].statusBarOrientation != toInterfaceOrientation ? KIFTestStepResultWait : KIFTestStepResultSuccess);
+    }];
     
 }
 

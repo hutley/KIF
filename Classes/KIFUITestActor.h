@@ -384,6 +384,8 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
 
 - (void) dismissAlertsAndPopovers;
 
+- (void) rotateToInterfaceOrientation: (UIInterfaceOrientation) toInterfaceOrientation;
+
 /*!
  @abstract Select a certain photo from the built in photo picker.
  @discussion This set of steps expects that the photo picker has been initiated and that the sheet is up. From there it will tap the "Choose Photo" button and select the desired photo.
