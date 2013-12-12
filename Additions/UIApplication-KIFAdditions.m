@@ -124,6 +124,19 @@ static const void* KIFRunLoopModesKey        = &KIFRunLoopModesKey;
 
     return nil;
 }
+- (UIWindow*) alertViewWindow;
+{
+    for (UIWindow* window in self.windowsWithKeyWindow)
+    {
+        NSArray* alertViews = [window subviewsWithClassNameOrSuperClassNamePrefix:@"UIAlertView"];
+        if (alertViews.count > 0)
+        {
+            return window;
+        }
+    }
+    
+    return nil;
+}
 
 - (UIWindow*) dimmingViewWindow;
 {

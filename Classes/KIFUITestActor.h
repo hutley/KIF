@@ -62,10 +62,10 @@ static inline CGPoint CGPointFromViewLocationPointAndRect(KIFViewLocation locati
     CGFloat colWidth  = rect.size.width / 6;
     CGFloat rowHeight = rect.size.height / 6;
 
-    NSUInteger left = 1;
-    NSUInteger top = 1;
+    NSUInteger left   = 1;
+    NSUInteger top    = 1;
     NSUInteger center = 3;
-    NSUInteger right = 5;
+    NSUInteger right  = 5;
     NSUInteger bottom = 5;
 
     switch (location)
@@ -98,7 +98,7 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirectionByPoints(KIFSw
 {
     vertical   = (vertical < kKIFMinorSwipeDisplacement ? kKIFMinorSwipeDisplacement : vertical);
     horizontal = (horizontal < kKIFMinorSwipeDisplacement ? kKIFMinorSwipeDisplacement : horizontal);
-    
+
     switch (direction)
     {
         case KIFSwipeDirectionRight:
@@ -379,6 +379,10 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @discussion With a popover up, tap at the top-left corner of the screen.
  */
 - (void) dismissPopover;
+
+- (void) dismissAlert;
+
+- (void) dismissAlertsAndPopovers;
 
 /*!
  @abstract Select a certain photo from the built in photo picker.

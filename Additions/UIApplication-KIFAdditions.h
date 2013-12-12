@@ -65,6 +65,11 @@ UIKIT_EXTERN NSString *const UIApplicationOpenedURLKey;
 - (NSArray *)windowsWithKeyWindow;
 
 /*!
+ @returns The topmost window containing a @c UIAlertView.
+ */
+- (UIWindow*) alertViewWindow;
+
+/*!
  @abstract Writes a screenshot to disk.
  @discussion This method only works if the @c KIF_SCREENSHOT environment variable is set.
  @param lineNumber The line number in the code at which the screenshot was taken.

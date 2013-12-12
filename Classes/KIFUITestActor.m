@@ -15,6 +15,7 @@
 #import "CGGeometry-KIFAdditions.h"
 #import "NSError-KIFAdditions.h"
 #import "KIFTypist.h"
+#import <objc/runtime.h>
 
 @implementation KIFUITestActor
 
@@ -245,8 +246,9 @@
 {
     [self runBlock:^KIFTestStepResult (NSError** error) {
          // Try all the windows until we get one back that actually has something in it at the given point
-         UIView* view = nil;
-         for (UIWindow *window in [[[UIApplication sharedApplication] windowsWithKeyWindow] reverseObjectEnumerator])
+        UIView* view = nil;
+        NSArray* windows = [[UIApplication sharedApplication] windowsWithKeyWindow];
+         for (UIWindow *window in [windows reverseObjectEnumerator])
          {
              CGPoint windowPoint = [window convertPoint:screenPoint fromView:nil];
              view = [window hitTest:windowPoint withEvent:nil];
@@ -557,6 +559,63 @@
     [dimmingView tapAtPoint:CGPointMake(50.0f, 50.0f)];
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, tapDelay, false);
 }
+
+
+- (void) dismissAlert
+{
+    [self dismissAlertFailIfMissing:YES];
+}
+
+- (BOOL) dismissAlertFailIfMissing:(BOOL)failIfMissing
+{
+    const NSTimeInterval tapDelay = 0.05;
+    UIWindow* window = [[UIApplication sharedApplication] alertViewWindow];
+    
+    UIAlertView* alertView = [[window subviewsWithClassNamePrefix:@"UIAlertView"] lastObject];
+    
+    if (!alertView)
+    {
+        Class UIAlertManager = objc_getClass("_UIAlertManager");
+        alertView = [UIAlertManager performSelector:@selector(topMostAlert)];
+    }
+    
+    if (alertView)
+    {
+        [alertView dismissWithClickedButtonIndex:alertView.cancelButtonIndex animated:YES];
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, tapDelay, false);
+    }
+    
+    if (!alertView && failIfMissing)
+    {
+        [self failWithError:[NSError KIFErrorWithFormat:@"Failed to find any alert views in the application"] stopTest:YES];
+    }
+    
+    return (!!alertView);
+}
+
+
+
+- (void) dismissAlertsAndPopovers
+{
+
+    while ([self dismissAlertFailIfMissing:NO])
+    {
+        //dismiss em all!
+    }
+    
+    
+    UIWindow* dimmingWindow = nil;
+    NSInteger count = 0;
+    //don't get stuck if there is a modal on the screen
+    while (count < 5 && (dimmingWindow = [[UIApplication sharedApplication] dimmingViewWindow]))
+    {
+        [self dismissPopover];
+        count++;
+    }
+    
+    
+}
+
 
 - (void) choosePhotoInAlbum:(NSString*)albumName atRow:(NSInteger)row column:(NSInteger)column
 {
