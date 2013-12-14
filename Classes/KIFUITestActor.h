@@ -379,8 +379,9 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  @discussion With a popover up, tap at the top-left corner of the screen.
  */
 - (void) dismissPopover;
-
+- (BOOL) dismissPopoverFailIfMissing:(BOOL)failIfMissing;
 - (void) dismissAlert;
+- (BOOL) dismissAlertFailIfMissing:(BOOL)failIfMissing;
 
 - (void) dismissAlertsAndPopovers;
 
