@@ -79,7 +79,7 @@
     while (YES) {
         for (id/*UIKBKey*/ key in keys) {
             NSString *representedString = [key valueForKey:@"representedString"];
-            
+            //NSLog(@"%@",representedString);
             // Find the key based on the key's represented string
             if ([representedString isEqual:characterString]) {
                 keyToTap = key;

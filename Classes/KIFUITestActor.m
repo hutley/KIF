@@ -247,14 +247,14 @@
 {
     [self runBlock:^KIFTestStepResult (NSError** error) {
          // Try all the windows until we get one back that actually has something in it at the given point
-        UIView* view = nil;
-        NSArray* windows = [[UIApplication sharedApplication] windowsWithKeyWindow];
+         UIView* view = nil;
+         NSArray* windows = [[UIApplication sharedApplication] windowsWithKeyWindow];
          for (UIWindow *window in [windows reverseObjectEnumerator])
          {
              CGPoint windowPoint = [window convertPoint:screenPoint fromView:nil];
              view = [window hitTest:windowPoint withEvent:nil];
 
-         // If we hit the window itself, then skip it.
+             // If we hit the window itself, then skip it.
              if (view == window || view == nil)
              {
                  continue;
@@ -547,10 +547,19 @@
     [slider dragFromPoint:currentPosition toPoint:finalPosition steps:10];
 }
 
+- (void) dismissKeyboard
+{
+    [KIFTypist enterCharacter:@"Dismiss"];
+
+    //wait for the keyboard to hide
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.5, false);
+}
+
 - (void) dismissPopover
 {
     [self dismissPopoverFailIfMissing:YES];
 }
+
 - (BOOL) dismissPopoverFailIfMissing:(BOOL)failIfMissing
 {
     const NSTimeInterval tapDelay = 0.05;
@@ -563,10 +572,9 @@
     UIView* dimmingView = [[window subviewsWithClassNamePrefix:@"UIDimmingView"] lastObject];
     [dimmingView tapAtPoint:CGPointMake(50.0f, 50.0f)];
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, tapDelay, false);
-    
+
     return (!!dimmingView);
 }
-
 
 - (void) dismissAlert
 {
@@ -577,71 +585,64 @@
 {
     const NSTimeInterval tapDelay = 0.05;
     UIWindow* window = [[UIApplication sharedApplication] alertViewWindow];
-    
+
     UIAlertView* alertView = [[window subviewsWithClassNamePrefix:@"UIAlertView"] lastObject];
-    
+
     if (!alertView)
     {
         Class UIAlertManager = objc_getClass("_UIAlertManager");
         alertView = [UIAlertManager performSelector:@selector(topMostAlert)];
     }
-    
+
     if (alertView)
     {
         [alertView dismissWithClickedButtonIndex:alertView.cancelButtonIndex animated:YES];
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, tapDelay, false);
     }
-    
+
     if (!alertView && failIfMissing)
     {
         [self failWithError:[NSError KIFErrorWithFormat:@"Failed to find any alert views in the application"] stopTest:YES];
     }
-    
+
     return (!!alertView);
 }
 
-
-
 - (void) dismissAlertsAndPopovers
 {
-
     while ([self dismissAlertFailIfMissing:NO])
     {
         //dismiss em all!
     }
-    
-    
+
+
     UIWindow* dimmingWindow = nil;
-    NSInteger count = 0;
+    NSInteger count         = 0;
     //don't get stuck if there is a modal on the screen
     while (count < 5 && (dimmingWindow = [[UIApplication sharedApplication] dimmingViewWindow]))
     {
         [self dismissPopover];
         count++;
     }
-    
-    
 }
 
+- (void) rotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+{
+    [self waitForBlock:^KIFTestStepResult (NSError** error) {
+         if ( [UIApplication sharedApplication].statusBarOrientation != toInterfaceOrientation )
+         {
+             UIDevice* device = [UIDevice currentDevice];
+             SEL message = NSSelectorFromString(@"setOrientation:");
 
-
-- (void) rotateToInterfaceOrientation: (UIInterfaceOrientation) toInterfaceOrientation {
-    
-    [self waitForBlock:^KIFTestStepResult(NSError **error) {
-        if( [UIApplication sharedApplication].statusBarOrientation != toInterfaceOrientation ) {
-            UIDevice* device = [UIDevice currentDevice];
-            SEL message = NSSelectorFromString(@"setOrientation:");
-            
-            if( [device respondsToSelector: message] ) {
-                objc_msgSend(device, message, toInterfaceOrientation);
-            }
-        }
-        return KIFTestStepResultSuccess;
-        
-    } untilCondition:^KIFTestStepResult{
-        return ( [UIApplication sharedApplication].statusBarOrientation != toInterfaceOrientation ? KIFTestStepResultWait : KIFTestStepResultSuccess);
-    }];
-    
+             if ( [device respondsToSelector:message] )
+             {
+                 objc_msgSend(device, message, toInterfaceOrientation);
+             }
+         }
+         return KIFTestStepResultSuccess;
+     } untilCondition:^KIFTestStepResult {
+         return ([UIApplication sharedApplication].statusBarOrientation != toInterfaceOrientation ? KIFTestStepResultWait : KIFTestStepResultSuccess);
+     }];
 }
 
 
@@ -843,10 +844,9 @@
 
         if (elementToScrollTo)
         {
-            
             CGFloat height = (scrollView.frame.size.height > scrollView.superview.frame.size.height ? scrollView.superview.frame.size.height : scrollView.frame.size.height);
-            CGFloat width = (scrollView.frame.size.width > scrollView.superview.frame.size.width ? scrollView.superview.frame.size.width : scrollView.frame.size.width);
-            
+            CGFloat width  = (scrollView.frame.size.width > scrollView.superview.frame.size.width ? scrollView.superview.frame.size.width : scrollView.frame.size.width);
+
             //access frame doesn't account for device orientation so convert...
             CGRect accessibilityFrame = [scrollView.window convertRect:elementToScrollTo.accessibilityFrame toView:scrollView];
             direction       = (accessibilityFrame.origin.y - scrollView.contentOffset.y > height - accessibilityFrame.size.height ? -0.5 : 0.5);
@@ -901,9 +901,9 @@
     [self waitForAccessibilityElement:&element view:&viewToScroll withLabelOrIdentifier:labelOrIdentifier value:Nil traits:UIAccessibilityTraitNone tappable:NO];
 
     // Within this method, all geometry is done in the coordinate system of the view to scroll.
-    
+
     CGRect elementFrame = [viewToScroll.windowOrIdentityWindow convertRect:element.accessibilityFrame toView:viewToScroll];
-    
+
     //check to see if the scroller is completely shown within the bounds of its superview (aka ignore offscreen buffer areas).
     CGRect superFrame = viewToScroll.superview.frame;
     if (superFrame.size.height < elementFrame.size.height)
