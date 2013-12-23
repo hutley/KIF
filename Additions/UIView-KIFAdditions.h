@@ -29,6 +29,8 @@ typedef CGPoint KIFDisplacement;
  */
 - (UIAccessibilityElement *)accessibilityElementMatchingBlock:(BOOL(^)(UIAccessibilityElement *))matchBlock;
 
+- (NSArray*) accessibilityElementsMatchingBlock:(BOOL (^)(UIAccessibilityElement*))matchBlock;
+
 - (UIView *)subviewWithClassNamePrefix:(NSString *)prefix __deprecated;
 - (NSArray *)subviewsWithClassNamePrefix:(NSString *)prefix;
 - (UIView *)subviewWithClassNameOrSuperClassNamePrefix:(NSString *)prefix __deprecated;

@@ -85,14 +85,14 @@ static const void* KIFRunLoopModesKey        = &KIFRunLoopModesKey;
     NSMutableArray* elements = [NSMutableArray array];
     for (UIWindow* window in [self.windowsWithKeyWindow reverseObjectEnumerator])
     {
-        UIAccessibilityElement* element = [window accessibilityElementMatchingBlock:matchBlock];
-        if (element)
+        NSArray* matching = [window accessibilityElementsMatchingBlock:matchBlock];
+        if (matching.count > 0)
         {
-            [elements addObject:element];
+            [elements addObjectsFromArray:matching];
         }
     }
 
-    return (elements.count > 0 ? [elements copy] : nil);
+    return (elements.count > 0 ? [[elements copy] autorelease] : nil);
 }
 
 
