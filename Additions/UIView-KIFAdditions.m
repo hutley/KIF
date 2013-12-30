@@ -157,13 +157,8 @@ typedef struct __GSEvent* GSEventRef;
 
         if (elementMatches)
         {
-            UIView* viewForElement     = [UIAccessibilityElement viewContainingAccessibilityElement:element];
-            CGRect  accessibilityFrame = [viewForElement.window convertRect:element.accessibilityFrame toView:viewForElement];
-
-            if ([viewForElement isTappableInRect:accessibilityFrame])
-            {
                 [matches addObject:element];
-            }
+        
         }
         else
         {
