@@ -639,7 +639,7 @@
                  objc_msgSend(device, message, toInterfaceOrientation);
              }
          }
-         return KIFTestStepResultSuccess;
+         return KIFTestStepResultWait;
      } untilCondition:^KIFTestStepResult {
          return ([UIApplication sharedApplication].statusBarOrientation != toInterfaceOrientation ? KIFTestStepResultWait : KIFTestStepResultSuccess);
      }];
