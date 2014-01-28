@@ -121,8 +121,9 @@ typedef struct __GSEvent* GSEventRef;
                     accessibilityValue = [(NSAttributedString*)accessibilityValue string];
                 }
 
-                if (element.accessibilityIdentifier)
-                    NSLog(@"%@", element.accessibilityIdentifier);
+                if (element.accessibilityIdentifier || element.accessibilityLabel)
+                    NSLog(@"%@ %@", element.accessibilityIdentifier, element.accessibilityLabel);
+        
                 BOOL labelsMatch = [element.accessibilityLabel isEqual:labelOrIdentifier];
                 BOOL identifiersMatch = [element.accessibilityIdentifier isEqual:labelOrIdentifier];
                 BOOL traitsMatch = ((element.accessibilityTraits) & traits) == traits;
