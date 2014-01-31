@@ -199,7 +199,7 @@
     UIView* view = nil;
     UIAccessibilityElement* element = nil;
 
-    [self waitForAccessibilityElement:&element view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:YES];
+    [self waitForAccessibilityElement:&element view:&view withLabelOrIdentifier:labelOrIdentifier value:nil traits:traits tappable:YES];
     [self tapAccessibilityElement:element inView:view];
 }
 

@@ -122,7 +122,9 @@ typedef struct __GSEvent* GSEventRef;
                 }
 
                 if (element.accessibilityIdentifier || element.accessibilityLabel)
-                    NSLog(@"%@ %@", element.accessibilityIdentifier, element.accessibilityLabel);
+                {
+                    NSLog(@"<%p> %@ %@", element, element.accessibilityIdentifier, element.accessibilityLabel);
+                }
         
                 BOOL labelsMatch = [element.accessibilityLabel isEqual:labelOrIdentifier];
                 BOOL identifiersMatch = [element.accessibilityIdentifier isEqual:labelOrIdentifier];
@@ -222,7 +224,7 @@ typedef struct __GSEvent* GSEventRef;
 
     if (self.accessibilityIdentifier)
     {
-        NSLog(@"%@", self.accessibilityIdentifier);
+        NSLog(@"<%p> %@ %@", self, self.accessibilityIdentifier, self.accessibilityLabel);
     }
 
     BOOL elementMatches = matchBlock((UIAccessibilityElement*)self);
