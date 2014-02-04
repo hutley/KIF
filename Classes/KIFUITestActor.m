@@ -20,6 +20,10 @@
 
 @implementation KIFUITestActor
 
+- (UIAccessibilityElement*) accessibilityElementWithLabelOrIdentifier:(NSString*)viewNamed
+{
+    return [[UIApplication sharedApplication] accessibilityElementWithLabelOrIdentifier:viewNamed accessibilityValue:nil traits:UIAccessibilityTraitNone];
+}
 
 - (UIView*) waitForViewWithAccessibilityLabel:(NSString*)label
 {

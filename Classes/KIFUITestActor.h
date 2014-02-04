@@ -151,6 +151,9 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  If the view you want to wait for is tappable, use the -waitForTappableViewWithAccessibilityLabel: methods instead as they provide a more strict test.
  @param label The accessibility label of the element to wait for.
  */
+
+- (UIAccessibilityElement*) accessibilityElementWithLabelOrIdentifier:(NSString*)viewNamed;
+
 - (UIView*) waitForViewWithAccessibilityLabel:(NSString*)label;
 
 /*!
