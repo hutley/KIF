@@ -123,7 +123,7 @@ typedef struct __GSEvent* GSEventRef;
 
                 if (element.accessibilityIdentifier || element.accessibilityLabel)
                 {
-                    NSLog(@"<%p> %@ %@", element, element.accessibilityIdentifier, element.accessibilityLabel);
+                    //NSLog(@"<%p> %@ %@", element, element.accessibilityIdentifier, element.accessibilityLabel);
                 }
         
                 BOOL labelsMatch = [element.accessibilityLabel isEqual:labelOrIdentifier];
@@ -145,7 +145,7 @@ typedef struct __GSEvent* GSEventRef;
 
     if (self.accessibilityIdentifier)
     {
-        NSLog(@"RECURSE %@", self.accessibilityIdentifier);
+        //NSLog(@"RECURSE %@", self.accessibilityIdentifier);
     }
 
 
@@ -224,7 +224,7 @@ typedef struct __GSEvent* GSEventRef;
 
     if (self.accessibilityIdentifier)
     {
-        NSLog(@"<%p> %@ %@", self, self.accessibilityIdentifier, self.accessibilityLabel);
+        //NSLog(@"<%p> %@ %@", self, self.accessibilityIdentifier, self.accessibilityLabel);
     }
 
     BOOL elementMatches = matchBlock((UIAccessibilityElement*)self);
@@ -546,7 +546,7 @@ typedef struct __GSEvent* GSEventRef;
         path[i] = CGPointMake(startPoint.x + (progress * displacement.x),
                               startPoint.y + (progress * displacement.y));
 
-        NSLog(@"PATH_POINT_%i: %f,%f", i, path[i].x, path[i].y);
+        //NSLog(@"PATH_POINT_%i: %f,%f", i, path[i].x, path[i].y);
     }
 
     [self dragAlongPathWithPoints:path count:stepCount];
@@ -582,7 +582,7 @@ typedef struct __GSEvent* GSEventRef;
         CGPoint dragPoint = [self.window convertPoint:points[pointIndex] fromView:self];
         dragPoint = CGPointMake(dragPoint.x-changeX, dragPoint.y-changeY);
         [touch setLocationInWindow:dragPoint];
-        NSLog(@"DRAG_POINT_%i: %f %f", pointIndex, dragPoint.x, dragPoint.y);
+        //NSLog(@"DRAG_POINT_%i: %f %f", pointIndex, dragPoint.x, dragPoint.y);
 
         [touch setPhase:UITouchPhaseMoved];
         UIEvent* eventDrag = [self _eventWithTouch:touch];

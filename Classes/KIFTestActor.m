@@ -174,6 +174,7 @@ static NSTimeInterval KIFTestStepDefaultTimeout = 10.0;
 {
     [self waitForBlock:executionBlock untilCondition:conditionBlock timeout:10.0];
 }
+
 - (void) waitForBlock:(KIFTestExecutionBlock)executionBlock untilCondition:(KIFTestConditionBlock)conditionBlock timeout:(NSTimeInterval)timeout
 {
     NSDate* startDate = [NSDate date];
@@ -208,19 +209,22 @@ static NSTimeInterval KIFTestStepDefaultTimeout = 10.0;
         [self failWithError:error stopTest:YES];
     }
 }
-
-
 - (void) waitForNotification:(NSString*)notificationName fromBlock:(KIFTestExecutionBlock)executionBlock
+{
+    [self waitForNotification:notificationName fromBlock:executionBlock timeout:20.0];
+}
+
+- (void) waitForNotification:(NSString*)notificationName fromBlock:(KIFTestExecutionBlock)executionBlock timeout:(NSTimeInterval)timeout
 {
     __block BOOL notificationReceived = NO;
 
-    [[NSNotificationCenter defaultCenter] addObserverForName:notificationName object:Nil queue:NSOperationQueuePriorityNormal usingBlock:^(NSNotification* note) {
+    [[NSNotificationCenter defaultCenter] addObserverForName:notificationName object:nil queue:[NSOperationQueue currentQueue] usingBlock:^(NSNotification* note) {
          notificationReceived = YES;
      }];
 
     [self waitForBlock:executionBlock untilCondition:^KIFTestStepResult (void) {
-         return (!notificationReceived ? KIFTestStepResultWait : KIFTestStepResultSuccess);
-     }];
+         return (notificationReceived ? KIFTestStepResultSuccess : KIFTestStepResultWait);
+     } timeout:timeout];
 }
 
 @end
