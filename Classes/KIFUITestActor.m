@@ -841,8 +841,9 @@
     BOOL     scrolled = NO;
 
     NSUInteger directionChanges = 0;
+    NSUInteger totalDirectionChanges = 0;
 
-    while (!elementOnScreen)
+    while (!elementOnScreen && totalDirectionChanges < 10) //don't get stuck indefinitely
     {
         UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:&error];
 
@@ -881,6 +882,7 @@
             {
                 direction = -direction;
                 directionChanges++;
+                totalDirectionChanges++;
             }
 
             lastOffset = scrollView.contentOffset;
