@@ -377,6 +377,8 @@ static inline KIFDisplacement KIFDisplacementForSwipingInDirection(KIFSwipeDirec
  */
 - (void) setValue:(float)value forSliderWithAccessibilityLabel:(NSString*)label;
 
+- (void) setValue:(float)value forSliderWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier;
+
 /*!
  @abstract Dismisses a popover on screen.
  @discussion With a popover up, tap at the top-left corner of the screen.

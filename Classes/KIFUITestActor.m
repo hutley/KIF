@@ -526,30 +526,55 @@
 {
     UISlider* slider = nil;
     UIAccessibilityElement* element = nil;
-
+    
     [self waitForAccessibilityElement:&element view:&slider withLabel:label value:nil traits:UIAccessibilityTraitNone tappable:YES];
-
+ 
     if (![slider isKindOfClass:[UISlider class]])
     {
         [self failWithError:[NSError KIFErrorWithFormat:@"View with accessibility label \"%@\" is a %@, not a UISlider", label, NSStringFromClass([slider class])] stopTest:YES];
     }
+    
+    [self setValue:value forSlider:slider];
+}
 
+
+- (void) setValue:(float)value forSliderWithAccessibilityLabelOrIdentifier:(NSString*)labelOrIdentifier
+{
+    UISlider* slider = nil;
+    UIAccessibilityElement* element = nil;
+    
+    [self waitForAccessibilityElement:&element view:&slider withLabelOrIdentifier:labelOrIdentifier value:nil traits:UIAccessibilityTraitNone tappable:YES];
+    
+    if (![slider isKindOfClass:[UISlider class]])
+    {
+        [self failWithError:[NSError KIFErrorWithFormat:@"View with accessibility label or identifier \"%@\" is a %@, not a UISlider", labelOrIdentifier, NSStringFromClass([slider class])] stopTest:YES];
+    }
+
+    [self setValue:value forSlider:slider];
+
+}
+
+- (void) setValue:(float)value forSlider:(UISlider*)slider
+{
+    
     if (value < slider.minimumValue)
     {
         [self failWithError:[NSError KIFErrorWithFormat:@"Cannot slide past minimum value of %f", slider.minimumValue] stopTest:YES];
     }
-
+    
     if (value > slider.maximumValue)
     {
         [self failWithError:[NSError KIFErrorWithFormat:@"Cannot slide past maximum value of %f", slider.maximumValue] stopTest:YES];
     }
-
+    
     CGRect  trackRect       = [slider trackRectForBounds:slider.bounds];
     CGPoint currentPosition = CGPointCenteredInRect([slider thumbRectForBounds:slider.bounds trackRect:trackRect value:slider.value]);
     CGPoint finalPosition   = CGPointCenteredInRect([slider thumbRectForBounds:slider.bounds trackRect:trackRect value:value]);
-
+    
     [slider dragFromPoint:currentPosition toPoint:finalPosition steps:10];
+
 }
+
 
 - (void) dismissKeyboard
 {
