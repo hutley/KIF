@@ -71,7 +71,7 @@ UIKIT_EXTERN NSString *const UIApplicationOpenedURLKey;
 
 /*!
  @abstract Writes a screenshot to disk.
- @discussion This method only works if the @c KIF_SCREENSHOT environment variable is set.
+ @discussion This method only works if the @c KIF_SCREENSHOTS environment variable is set.
  @param lineNumber The line number in the code at which the screenshot was taken.
  @param filename The name of the file in which the screenshot was taken.
  @param description An optional description of the scene being captured.
@@ -103,3 +103,10 @@ UIKIT_EXTERN NSString *const UIApplicationOpenedURLKey;
 + (void)stopMockingOpenURL;
 
 @end
+
+@interface UIApplication (Private)
+- (BOOL)rotateIfNeeded:(UIDeviceOrientation)orientation;
+- (UIWindow *)statusBarWindow;
+@property(getter=isStatusBarHidden) BOOL statusBarHidden;
+@end
+

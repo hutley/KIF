@@ -53,6 +53,10 @@ typedef struct __GSEvent* GSEventRef;
 
 @end
 
+@interface UIApplication (KIFAdditionsPrivate)
+- (UIEvent *)_touchesEvent;
+@end
+
 
 @interface NSObject (UIWebDocumentViewInternal)
 
@@ -142,26 +146,26 @@ typedef struct __GSEvent* GSEventRef;
     {
         return nil;
     }
-
+    
     if (self.accessibilityIdentifier)
     {
         //NSLog(@"RECURSE %@", self.accessibilityIdentifier);
     }
-
-
+    
+    
     NSMutableArray* matches      = [NSMutableArray array];
     NSMutableArray* elementStack = [NSMutableArray arrayWithObject:self];
-
+    
     while (elementStack.count > 0)
     {
         UIAccessibilityElement* element = [[[elementStack lastObject] retain] autorelease];
         [elementStack removeLastObject];
         BOOL elementMatches = matchBlock(element);
-
+        
         if (elementMatches)
         {
-                [matches addObject:element];
-        
+            [matches addObject:element];
+            
         }
         else
         {
@@ -172,25 +176,25 @@ typedef struct __GSEvent* GSEventRef;
             {
                 continue;
             }
-
+            
             for (NSInteger accessibilityElementIndex = 0; accessibilityElementIndex < accessibilityElementCount; accessibilityElementIndex++)
             {
                 UIAccessibilityElement* subelement = [element accessibilityElementAtIndex:accessibilityElementIndex];
-
+                
                 UIView* viewForElement     = [UIAccessibilityElement viewContainingAccessibilityElement:element];
                 CGRect  accessibilityFrame = [viewForElement.window convertRect:element.accessibilityFrame toView:viewForElement];
-
+                
                 //don't cause scrollviews and tableviews to completely load by trying to access all the nonvisible
                 //cells, only look at ones that should be onscreen or nearly onscreen.
                 BOOL shouldBeVisibleAlready = YES;
                 if ([viewForElement isKindOfClass:[UIScrollView class]])
                 {
                     UIScrollView* scrollView = (id)viewForElement;
-
+                    
                     //Load double the height to account for possible partial visibility....
                     shouldBeVisibleAlready = (accessibilityFrame.origin.y > scrollView.contentOffset.y +scrollView.frame.size.height *2 && accessibilityFrame.origin.y < scrollView.contentOffset.y -scrollView.frame.size.height *2);
                 }
-
+                
                 if (subelement && shouldBeVisibleAlready)
                 {
                     [elementStack addObject:subelement];
@@ -198,7 +202,7 @@ typedef struct __GSEvent* GSEventRef;
             }
         }
     }
-
+    
     for (UIView* view in self.subviews)
     {
         NSArray* matching = [view accessibilityElementsMatchingBlock:matchBlock];
@@ -218,17 +222,17 @@ typedef struct __GSEvent* GSEventRef;
     {
         return nil;
     }
-
+    
     // In case multiple elements with the same label exist, prefer ones that are currently visible
     UIAccessibilityElement* matchingButOccludedElement = nil;
-
+    
     if (self.accessibilityIdentifier)
     {
         //NSLog(@"<%p> %@ %@", self, self.accessibilityIdentifier, self.accessibilityLabel);
     }
-
+    
     BOOL elementMatches = matchBlock((UIAccessibilityElement*)self);
-
+    
     if (elementMatches)
     {
         if (self.isTappable)
@@ -240,12 +244,12 @@ typedef struct __GSEvent* GSEventRef;
             matchingButOccludedElement = (UIAccessibilityElement*)self;
         }
     }
-
+    
     if ([[[self class] classesToSkipAccessibilitySearchRecursion] containsObject:[self class]])
     {
         return matchingButOccludedElement;
     }
-
+    
     // Check the subviews first. Even if the receiver says it's an accessibility container,
     // the returned objects are UIAccessibilityElementMockViews (which aren't actually views)
     // rather than the real subviews it contains. We want the real views if possible.
@@ -257,10 +261,10 @@ typedef struct __GSEvent* GSEventRef;
         {
             continue;
         }
-
+        
         UIView* viewForElement     = [UIAccessibilityElement viewContainingAccessibilityElement:element];
         CGRect  accessibilityFrame = [viewForElement.window convertRect:element.accessibilityFrame toView:viewForElement];
-
+        
         if ([viewForElement isTappableInRect:accessibilityFrame])
         {
             return element;
@@ -270,20 +274,20 @@ typedef struct __GSEvent* GSEventRef;
             matchingButOccludedElement = element;
         }
     }
-
+    
     NSMutableArray* elementStack = [NSMutableArray arrayWithObject:self];
-
+    
     while (elementStack.count)
     {
         UIAccessibilityElement* element = [[[elementStack lastObject] retain] autorelease];
         [elementStack removeLastObject];
         BOOL elementMatches = matchBlock(element);
-
+        
         if (elementMatches)
         {
             UIView* viewForElement     = [UIAccessibilityElement viewContainingAccessibilityElement:element];
             CGRect  accessibilityFrame = [viewForElement.window convertRect:element.accessibilityFrame toView:viewForElement];
-
+            
             if ([viewForElement isTappableInRect:accessibilityFrame])
             {
                 return element;
@@ -294,7 +298,7 @@ typedef struct __GSEvent* GSEventRef;
                 continue;
             }
         }
-
+        
         // If the view is an accessibility container, and we didn't find a matching subview,
         // then check the actual accessibility elements
         NSInteger accessibilityElementCount = element.accessibilityElementCount;
@@ -302,32 +306,32 @@ typedef struct __GSEvent* GSEventRef;
         {
             continue;
         }
-
+        
         for (NSInteger accessibilityElementIndex = 0; accessibilityElementIndex < accessibilityElementCount; accessibilityElementIndex++)
         {
             UIAccessibilityElement* subelement = [element accessibilityElementAtIndex:accessibilityElementIndex];
-
+            
             UIView* viewForElement     = [UIAccessibilityElement viewContainingAccessibilityElement:element];
             CGRect  accessibilityFrame = [viewForElement.window convertRect:element.accessibilityFrame toView:viewForElement];
-
+            
             //don't cause scrollviews and tableviews to completely load by trying to access all the nonvisible
             //cells, only look at ones that should be onscreen or nearly onscreen.
             BOOL shouldBeVisibleAlready = YES;
             if ([viewForElement isKindOfClass:[UIScrollView class]])
             {
                 UIScrollView* scrollView = (id)viewForElement;
-
+                
                 //Load double the height to account for possible partial visibility....
                 shouldBeVisibleAlready = (accessibilityFrame.origin.y > scrollView.contentOffset.y +scrollView.frame.size.height *2 && accessibilityFrame.origin.y < scrollView.contentOffset.y -scrollView.frame.size.height *2);
             }
-
+            
             if (subelement && shouldBeVisibleAlready)
             {
                 [elementStack addObject:subelement];
             }
         }
     }
-
+    
     return matchingButOccludedElement;
 }
 
@@ -468,7 +472,7 @@ typedef struct __GSEvent* GSEventRef;
 
     // Handle touches in the normal way for other views
     UITouch* touch = [[UITouch alloc] initAtPoint:point inView:self];
-    [touch setPhase:UITouchPhaseBegan];
+    [touch setPhaseAndUpdateTimestamp:UITouchPhaseBegan];
 
     UIEvent* event = [self _eventWithTouch:touch];
 
@@ -476,8 +480,8 @@ typedef struct __GSEvent* GSEventRef;
 
     //Give the UI a chance to update
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, TAP_TOUCH_DELAY, false);
-
-    [touch setPhase:UITouchPhaseEnded];
+    
+    [touch setPhaseAndUpdateTimestamp:UITouchPhaseEnded];
     [[UIApplication sharedApplication] sendEvent:event];
 
     // Dispatching the event doesn't actually update the first responder, so fake it
@@ -494,7 +498,7 @@ typedef struct __GSEvent* GSEventRef;
 {
     UITouch* touch = [[UITouch alloc] initAtPoint:point inView:self];
 
-    [touch setPhase:UITouchPhaseBegan];
+    [touch setPhaseAndUpdateTimestamp:UITouchPhaseBegan];
 
     UIEvent* eventDown = [self _eventWithTouch:touch];
     [[UIApplication sharedApplication] sendEvent:eventDown];
@@ -503,7 +507,7 @@ typedef struct __GSEvent* GSEventRef;
 
     for (NSTimeInterval timeSpent = DRAG_TOUCH_DELAY; timeSpent < duration; timeSpent += DRAG_TOUCH_DELAY)
     {
-        [touch setPhase:UITouchPhaseStationary];
+        [touch setPhaseAndUpdateTimestamp:UITouchPhaseStationary];
 
         UIEvent* eventStillDown = [self _eventWithTouch:touch];
         [[UIApplication sharedApplication] sendEvent:eventStillDown];
@@ -511,7 +515,7 @@ typedef struct __GSEvent* GSEventRef;
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, DRAG_TOUCH_DELAY, false);
     }
 
-    [touch setPhase:UITouchPhaseEnded];
+    [touch setPhaseAndUpdateTimestamp:UITouchPhaseEnded];
     UIEvent* eventUp = [self _eventWithTouch:touch];
     [[UIApplication sharedApplication] sendEvent:eventUp];
 
@@ -562,7 +566,7 @@ typedef struct __GSEvent* GSEventRef;
 
     // Create the touch (there should only be one touch object for the whole drag)
     UITouch* touch = [[UITouch alloc] initAtPoint:points[0] inView:self];
-    [touch setPhase:UITouchPhaseBegan];
+    [touch setPhaseAndUpdateTimestamp:UITouchPhaseBegan];
 
     UIEvent* eventDown = [self _eventWithTouch:touch];
     [[UIApplication sharedApplication] sendEvent:eventDown];
@@ -584,14 +588,14 @@ typedef struct __GSEvent* GSEventRef;
         [touch setLocationInWindow:dragPoint];
         //NSLog(@"DRAG_POINT_%i: %f %f", pointIndex, dragPoint.x, dragPoint.y);
 
-        [touch setPhase:UITouchPhaseMoved];
+        [touch setPhaseAndUpdateTimestamp:UITouchPhaseMoved];
         UIEvent* eventDrag = [self _eventWithTouch:touch];
         [[UIApplication sharedApplication] sendEvent:eventDrag];
 
         CFRunLoopRunInMode(UIApplicationCurrentRunMode, DRAG_TOUCH_DELAY, false);
     }
 
-    [touch setPhase:UITouchPhaseEnded];
+    [touch setPhaseAndUpdateTimestamp:UITouchPhaseEnded];
 
     UIEvent* eventUp = [self _eventWithTouch:touch];
     [[UIApplication sharedApplication] sendEvent:eventUp];
@@ -703,16 +707,16 @@ typedef struct __GSEvent* GSEventRef;
 
 - (UIEvent*) _eventWithTouch:(UITouch*)touch;
 {
-    UIEvent* event = [[UIApplication sharedApplication] performSelector:@selector(_touchesEvent)];
-
-    CGPoint        location   = [touch locationInView:touch.window];
-    KIFEventProxy* eventProxy = [[KIFEventProxy alloc] init];
-    eventProxy->x1    = location.x;
-    eventProxy->y1    = location.y;
-    eventProxy->x2    = location.x;
-    eventProxy->y2    = location.y;
-    eventProxy->x3    = location.x;
-    eventProxy->y3    = location.y;
+    UIEvent *event = [[UIApplication sharedApplication] _touchesEvent];
+    
+    CGPoint location = [touch locationInView:touch.window];
+    KIFEventProxy *eventProxy = [[KIFEventProxy alloc] init];
+    eventProxy->x1 = location.x;
+    eventProxy->y1 = location.y;
+    eventProxy->x2 = location.x;
+    eventProxy->y2 = location.y;
+    eventProxy->x3 = location.x;
+    eventProxy->y3 = location.y;
     eventProxy->sizeX = 1.0;
     eventProxy->sizeY = 1.0;
     eventProxy->flags = ([touch phase] == UITouchPhaseEnded) ? 0x1010180 : 0x3010180;
