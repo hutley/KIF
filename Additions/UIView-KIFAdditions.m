@@ -549,65 +549,48 @@ typedef struct __GSEvent* GSEventRef;
         CGFloat progress = ((CGFloat)i) /(stepCount - 1);
         path[i] = CGPointMake(startPoint.x + (progress * displacement.x),
                               startPoint.y + (progress * displacement.y));
-
-        //NSLog(@"PATH_POINT_%i: %f,%f", i, path[i].x, path[i].y);
     }
 
     [self dragAlongPathWithPoints:path count:stepCount];
 }
 
-- (void) dragAlongPathWithPoints:(CGPoint*)points count:(NSInteger)count;
+- (void)dragAlongPathWithPoints:(CGPoint *)points count:(NSInteger)count;
 {
     // we need at least two points in order to make segments
-    if (count < 2)
-    {
+    if (count < 2) {
         return;
     }
-
+    
     // Create the touch (there should only be one touch object for the whole drag)
-    UITouch* touch = [[UITouch alloc] initAtPoint:points[0] inView:self];
+    UITouch *touch = [[UITouch alloc] initAtPoint:points[0] inView:self];
     [touch setPhaseAndUpdateTimestamp:UITouchPhaseBegan];
-
-    UIEvent* eventDown = [self _eventWithTouch:touch];
+    
+    UIEvent *eventDown = [self _eventWithTouch:touch];
     [[UIApplication sharedApplication] sendEvent:eventDown];
-
-    CGPoint centerA = [self.window convertPoint:self.center fromView:self];
-    //NSLog(@"CENTER_POINT_%i: %f %f", 0, centerA.x, centerA.y);
-
+    
     CFRunLoopRunInMode(UIApplicationCurrentRunMode, DRAG_TOUCH_DELAY, false);
-
-    for (NSInteger pointIndex = 1; pointIndex < count; pointIndex++)
-    {
-        CGPoint centerB = [self.window convertPoint:self.center fromView:self];
-        //NSLog(@"CENTER_POINT_%i: %f %f DIFF:%f %f", pointIndex, centerB.x, centerB.y, centerA.x - centerB.x, centerA.y - centerB.y);
-        CGFloat changeX = centerB.x - centerA.x;
-        CGFloat changeY = centerB.y - centerA.y;
-
-        CGPoint dragPoint = [self.window convertPoint:points[pointIndex] fromView:self];
-        dragPoint = CGPointMake(dragPoint.x-changeX, dragPoint.y-changeY);
-        [touch setLocationInWindow:dragPoint];
-        //NSLog(@"DRAG_POINT_%i: %f %f", pointIndex, dragPoint.x, dragPoint.y);
-
+    
+    for (NSInteger pointIndex = 1; pointIndex < count; pointIndex++) {
+        [touch setLocationInWindow:[self.window convertPoint:points[pointIndex] fromView:self]];
         [touch setPhaseAndUpdateTimestamp:UITouchPhaseMoved];
-        UIEvent* eventDrag = [self _eventWithTouch:touch];
+        
+        UIEvent *eventDrag = [self _eventWithTouch:touch];
         [[UIApplication sharedApplication] sendEvent:eventDrag];
-
+        
         CFRunLoopRunInMode(UIApplicationCurrentRunMode, DRAG_TOUCH_DELAY, false);
     }
-
+    
     [touch setPhaseAndUpdateTimestamp:UITouchPhaseEnded];
-
-    UIEvent* eventUp = [self _eventWithTouch:touch];
+    
+    UIEvent *eventUp = [self _eventWithTouch:touch];
     [[UIApplication sharedApplication] sendEvent:eventUp];
-
+    
     // Dispatching the event doesn't actually update the first responder, so fake it
-    if (touch.view == self && [self canBecomeFirstResponder])
-    {
+    if (touch.view == self && [self canBecomeFirstResponder]) {
         [self becomeFirstResponder];
     }
-
-    while (UIApplicationCurrentRunMode != kCFRunLoopDefaultMode)
-    {
+    
+    while (UIApplicationCurrentRunMode != kCFRunLoopDefaultMode) {
         CFRunLoopRunInMode(UIApplicationCurrentRunMode, 0.1, false);
     }
     [touch release];

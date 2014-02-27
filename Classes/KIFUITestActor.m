@@ -1005,11 +1005,28 @@
             CGFloat width  = (scrollView.frame.size.width > scrollView.superview.frame.size.width ? scrollView.superview.frame.size.width : scrollView.frame.size.width);
 
             //access frame doesn't account for device orientation so convert...
+            
             CGRect accessibilityFrame = [scrollView.window convertRect:elementToScrollTo.accessibilityFrame toView:scrollView];
             direction       = (accessibilityFrame.origin.y - scrollView.contentOffset.y > height - accessibilityFrame.size.height ? -0.5 : 0.5);
+
             elementOnScreen = (accessibilityFrame.origin.y >= 0.0
                                && accessibilityFrame.origin.y - scrollView.contentOffset.y <= height - accessibilityFrame.size.height
                                && accessibilityFrame.origin.y - scrollView.contentOffset.y >= 0.0);
+            
+            //some scrollviews may be taller than the superview - bufferzones...
+            CGFloat heightDiff = scrollView.frame.size.height - height;
+
+            if (!elementOnScreen && heightDiff > 0)
+            {
+                //access frame doesn't account for device orientation so convert...
+                direction       = (accessibilityFrame.origin.y >= 0.0 ? -0.5 : 0.5);
+                elementOnScreen = (accessibilityFrame.origin.y >= 0.0
+                                   && accessibilityFrame.origin.y <= height - accessibilityFrame.size.height);
+                
+            }
+           
+            NSLog(@"oY: %f cY: %f diff: %f dir: %f", accessibilityFrame.origin.y, scrollView.contentOffset.y, accessibilityFrame.origin.y  - scrollView.contentOffset.y, direction);
+            
 
             if (elementOnScreen)
             {
