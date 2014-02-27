@@ -257,7 +257,8 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     {
         if (error)
         {
-            *error = [NSError KIFErrorWithFormat:@"Accessibility element with label \"%@\" is hidden.", element.accessibilityLabel];
+            NSString* label = (element.accessibilityIdentifier ? element.accessibilityIdentifier : element.accessibilityLabel);
+            *error = [NSError KIFErrorWithFormat:@"Accessibility element with label or identifier \"%@\" is hidden.", label];
         }
         return nil;
     }
@@ -267,7 +268,7 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
         if (error)
         {
             NSString* label = (element.accessibilityIdentifier ? element.accessibilityIdentifier : element.accessibilityLabel);
-            *error = [NSError KIFErrorWithFormat:@"Accessibility element with label \"%@\" is not tappable. It may be blocked by other views.", label];
+            *error = [NSError KIFErrorWithFormat:@"Accessibility element with label or identifier \"%@\" is not tappable. It may be blocked by other views.", label];
         }
         return nil;
     }
