@@ -211,15 +211,21 @@ static NSTimeInterval KIFTestStepDefaultTimeout = 10.0;
 }
 - (void) waitForNotification:(NSString*)notificationName fromBlock:(KIFTestExecutionBlock)executionBlock
 {
-    [self waitForNotification:notificationName fromBlock:executionBlock timeout:20.0];
+    [self waitForNotification:notificationName fromBlock:executionBlock timeout:20.0 userInfo:NULL];
 }
 
 - (void) waitForNotification:(NSString*)notificationName fromBlock:(KIFTestExecutionBlock)executionBlock timeout:(NSTimeInterval)timeout
+{
+    [self waitForNotification:notificationName fromBlock:executionBlock timeout:timeout userInfo:NULL];
+}
+
+- (void) waitForNotification:(NSString*)notificationName fromBlock:(KIFTestExecutionBlock)executionBlock timeout:(NSTimeInterval)timeout userInfo:(NSDictionary**)userInfoOut
 {
     __block BOOL notificationReceived = NO;
 
     [[NSNotificationCenter defaultCenter] addObserverForName:notificationName object:nil queue:[NSOperationQueue currentQueue] usingBlock:^(NSNotification* note) {
          notificationReceived = YES;
+         *userInfoOut = [note userInfo];
      }];
 
     [self waitForBlock:executionBlock untilCondition:^KIFTestStepResult (void) {

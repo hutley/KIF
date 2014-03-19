@@ -135,6 +135,7 @@ typedef void (^KIFTestCompletionBlock)(KIFTestStepResult result, NSError *error)
 
 - (void) waitForNotification:(NSString*)notificationName fromBlock:(KIFTestExecutionBlock)executionBlock;
 - (void) waitForNotification:(NSString*)notificationName fromBlock:(KIFTestExecutionBlock)executionBlock timeout:(NSTimeInterval)timeout;
+- (void) waitForNotification:(NSString*)notificationName fromBlock:(KIFTestExecutionBlock)executionBlock timeout:(NSTimeInterval)timeout userInfo:(NSDictionary**)userInfoOut;
 
 @end
 
