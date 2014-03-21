@@ -225,7 +225,11 @@ static NSTimeInterval KIFTestStepDefaultTimeout = 10.0;
 
     [[NSNotificationCenter defaultCenter] addObserverForName:notificationName object:nil queue:[NSOperationQueue currentQueue] usingBlock:^(NSNotification* note) {
          notificationReceived = YES;
-         *userInfoOut = [note userInfo];
+        
+        if (userInfoOut != NULL)
+        {
+            *userInfoOut = [note userInfo];
+        }
      }];
 
     [self waitForBlock:executionBlock untilCondition:^KIFTestStepResult (void) {
