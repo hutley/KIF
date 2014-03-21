@@ -685,6 +685,7 @@
 
     //wait for the keyboard to hide
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.5, false);
+    [self waitForTimeInterval:0.5];
 }
 
 - (void) dismissPopover
@@ -997,46 +998,14 @@
 
     while (!elementOnScreen && totalDirectionChanges < 10) //don't get stuck indefinitely
     {
-        UIAccessibilityElement* elementToScrollTo = (id)[UIAccessibilityElement accessibilityElementWithLabelOrIdentifier:labelToScrollTo error:&error];
 
-        if (elementToScrollTo)
-        {
-            CGFloat height = (scrollView.frame.size.height > scrollView.superview.frame.size.height ? scrollView.superview.frame.size.height : scrollView.frame.size.height);
-            CGFloat width  = (scrollView.frame.size.width > scrollView.superview.frame.size.width ? scrollView.superview.frame.size.width : scrollView.frame.size.width);
-
-            //access frame doesn't account for device orientation so convert...
-            
-            CGRect accessibilityFrame = [scrollView.window convertRect:elementToScrollTo.accessibilityFrame toView:scrollView];
-            direction       = (accessibilityFrame.origin.y - scrollView.contentOffset.y > height - accessibilityFrame.size.height ? -0.5 : 0.5);
-
-            elementOnScreen = (accessibilityFrame.origin.y >= 0.0
-                               && accessibilityFrame.origin.y - scrollView.contentOffset.y <= height - accessibilityFrame.size.height
-                               && accessibilityFrame.origin.y - scrollView.contentOffset.y >= 0.0);
-            
-            //some scrollviews may be taller than the superview - bufferzones...
-            CGFloat heightDiff = scrollView.frame.size.height - height;
-
-            if (!elementOnScreen && heightDiff > 0)
-            {
-                //access frame doesn't account for device orientation so convert...
-                direction       = (accessibilityFrame.origin.y >= 0.0 ? -0.5 : 0.5);
-                elementOnScreen = (accessibilityFrame.origin.y >= 0.0
-                                   && accessibilityFrame.origin.y <= height - accessibilityFrame.size.height);
-                
-            }
-           
-            NSLog(@"oY: %f cY: %f diff: %f dir: %f", accessibilityFrame.origin.y, scrollView.contentOffset.y, accessibilityFrame.origin.y  - scrollView.contentOffset.y, direction);
-            
-
-            if (elementOnScreen)
-            {
-                elementOnScreen = (accessibilityFrame.origin.x >= 0.0
-                                   && accessibilityFrame.origin.x - scrollView.contentOffset.x <= width - accessibilityFrame.size.width
-                                   && accessibilityFrame.origin.x - scrollView.contentOffset.x >= 0.0);
-            }
-        }
-
-        if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
+        UIAccessibilityElement* elementToScrollTo = nil;
+        UIView* view = nil;
+        
+        [UIAccessibilityElement accessibilityElement:&elementToScrollTo view:&view withLabelOrIdentifier:labelToScrollTo value:nil traits:UIAccessibilityTraitNone tappable:YES error:&error];
+        
+        if (!elementToScrollTo || !view.isProbablyTappable)
+        //if (!elementToScrollTo || (elementToScrollTo && !elementOnScreen))
         {
             if (directionChanges > 5) //we got stuck
             {
@@ -1055,6 +1024,10 @@
             }
 
             lastOffset = scrollView.contentOffset;
+        }
+        else
+        {
+            elementOnScreen = YES;
         }
     }
 
