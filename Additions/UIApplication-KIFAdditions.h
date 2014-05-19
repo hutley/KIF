@@ -50,6 +50,11 @@ UIKIT_EXTERN NSString *const UIApplicationOpenedURLKey;
 - (UIWindow *)keyboardWindow;
 
 /*!
+ @returns The topmost window containing a @c UIDatePicker.
+ */
+- (UIWindow *)datePickerWindow;
+
+/*!
  @returns The topmost window containing a @c UIPickerView.
  */
 - (UIWindow *)pickerViewWindow;
@@ -106,6 +111,7 @@ UIKIT_EXTERN NSString *const UIApplicationOpenedURLKey;
 
 @interface UIApplication (Private)
 - (BOOL)rotateIfNeeded:(UIDeviceOrientation)orientation;
+- (void)rotateIfNeeded:(UIDeviceOrientation)orientation completion:(void (^)(void))completion;
 - (UIWindow *)statusBarWindow;
 @property(getter=isStatusBarHidden) BOOL statusBarHidden;
 @end

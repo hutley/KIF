@@ -60,12 +60,11 @@ return KIFTestStepResultWait; \
  @constant KIFTestStepResultSuccess The step succeeded and the test controller should move to the next step in the current scenario.
  @constant KIFTestStepResultWait The test isn't ready yet and should be tried again after a short delay.
  */
-enum {
+typedef NS_ENUM(NSUInteger, KIFTestStepResult) {
     KIFTestStepResultFailure = 0,
     KIFTestStepResultSuccess,
     KIFTestStepResultWait,
 };
-typedef NSInteger KIFTestStepResult;
 
 /*!
  @typedef KIFTestExecutionBlock
@@ -89,11 +88,12 @@ typedef void (^KIFTestCompletionBlock)(KIFTestStepResult result, NSError *error)
 
 @interface KIFTestActor : NSObject
 
+- (instancetype)initWithFile:(NSString *)file line:(NSInteger)line delegate:(id<KIFTestActorDelegate>)delegate;
 + (instancetype)actorInFile:(NSString *)file atLine:(NSInteger)line delegate:(id<KIFTestActorDelegate>)delegate;
 
-@property (nonatomic, readonly) NSString *file;
+@property (strong, nonatomic, readonly) NSString *file;
 @property (nonatomic, readonly) NSInteger line;
-@property (nonatomic, readonly) id<KIFTestActorDelegate> delegate;
+@property (weak, nonatomic, readonly) id<KIFTestActorDelegate> delegate;
 @property (nonatomic) NSTimeInterval executionBlockTimeout;
 
 - (instancetype)usingTimeout:(NSTimeInterval)executionBlockTimeout;

@@ -93,7 +93,7 @@ static const void* KIFRunLoopModesKey        = &KIFRunLoopModesKey;
         }
     }
 
-    return (elements.count > 0 ? [[elements copy] autorelease] : nil);
+    return (elements.count > 0 ? [elements copy] : nil);
 }
 
 
@@ -114,55 +114,43 @@ static const void* KIFRunLoopModesKey        = &KIFRunLoopModesKey;
 
 - (UIWindow*) pickerViewWindow;
 {
-    for (UIWindow* window in self.windowsWithKeyWindow)
-    {
-        NSArray* pickerViews = [window subviewsWithClassNameOrSuperClassNamePrefix:@"UIPickerView"];
-        if (pickerViews.count > 0)
-        {
-            return window;
-        }
-    }
-
-    return nil;
+    return [self getWindowForSubviewClass:@"UIPickerView"];
 }
 - (UIWindow*) alertViewWindow;
 {
-    for (UIWindow* window in self.windowsWithKeyWindow)
-    {
-        NSArray* alertViews = [window subviewsWithClassNameOrSuperClassNamePrefix:@"UIAlertView"];
-        if (alertViews.count > 0)
-        {
-            return window;
-        }
-    }
-    
-    return nil;
+    return [self getWindowForSubviewClass:@"UIAlertView"];
 }
 
 - (UIWindow*) dimmingViewWindow;
 {
+    return [self getWindowForSubviewClass:@"UIDimmingView"];
+}
+
+- (UIWindow *)datePickerWindow;
+{
+    return [self getWindowForSubviewClass:@"UIDatePicker"];
+}
+
+- (UIWindow*) getWindowForSubviewClass:(NSString*) subclass
+{
     for (UIWindow* window in self.windowsWithKeyWindow)
     {
-        NSArray* dimmingViews = [window subviewsWithClassNameOrSuperClassNamePrefix:@"UIDimmingView"];
-        if (dimmingViews.count > 0)
+        NSArray* view = [window subviewsWithClassNameOrSuperClassNamePrefix:@"UIDatePicker"];
+        if (view.count > 0)
         {
             return window;
         }
     }
-
     return nil;
 }
-
-- (NSArray*) windowsWithKeyWindow
+- (NSArray *)windowsWithKeyWindow
 {
-    NSMutableArray* windows   = self.windows.mutableCopy;
-    UIWindow*       keyWindow = self.keyWindow;
-
-    if (![windows containsObject:keyWindow])
-    {
+    NSMutableArray *windows = self.windows.mutableCopy;
+    UIWindow *keyWindow = self.keyWindow;
+    if (![windows containsObject:keyWindow]) {
         [windows addObject:keyWindow];
     }
-    return [windows autorelease];
+    return windows;
 }
 
 #pragma mark - Screenshoting
@@ -234,7 +222,7 @@ static const void* KIFRunLoopModesKey        = &KIFRunLoopModesKey;
 
 - (CFStringRef) currentRunLoopMode;
 {
-    return (CFStringRef)[self KIF_runLoopModes].lastObject;
+    return (__bridge CFStringRef)[self KIF_runLoopModes].lastObject;
 }
 
 - (void) KIF_pushRunLoopMode:(NSString*)mode;

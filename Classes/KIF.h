@@ -12,12 +12,8 @@
 #import "KIFSystemTestActor.h"
 #import "KIFUITestActor.h"
 
-//#import "UIApplication-KIFAdditions.h"
-//#import "UIWindow-KIFAdditions.h"
-#import "UIAccessibilityElement-KIFAdditions.h"
-#import "UIView-KIFAdditions.h"
-//#import "CGGeometry-KIFAdditions.h"
-//#import "NSError-KIFAdditions.h"
-//#import "KIFTypist.h"
-
+#ifndef KIF_SENTEST
+#import "XCTestCase-KIFAdditions.h"
+#else
 #import "SenTestCase-KIFAdditions.h"
+#endif

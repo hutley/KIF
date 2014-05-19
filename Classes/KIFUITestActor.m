@@ -13,6 +13,7 @@
 #import "UIAccessibilityElement-KIFAdditions.h"
 #import "UIView-KIFAdditions.h"
 #import "CGGeometry-KIFAdditions.h"
+#import "UITableView-KIFAdditions.h"
 #import "NSError-KIFAdditions.h"
 #import "KIFTypist.h"
 #import <objc/runtime.h>
@@ -353,6 +354,24 @@
     [self waitForTimeInterval:0.5];
 }
 
+- (void)waitForKeyboard
+{
+    [self runBlock:^KIFTestStepResult(NSError **error) {
+        KIFTestWaitCondition(![KIFTypist keyboardHidden], error, @"Keyboard is not visible");
+        
+        return KIFTestStepResultSuccess;
+    }];
+}
+
+- (void)waitForAbsenceOfKeyboard
+{
+    [self runBlock:^KIFTestStepResult(NSError **error) {
+        KIFTestWaitCondition([KIFTypist keyboardHidden], error, @"Keyboard is visible");
+        
+        return KIFTestStepResultSuccess;
+    }];
+}
+
 - (void) enterTextIntoCurrentFirstResponder:(NSString*)text;
 {
     // Wait for the keyboard
@@ -536,6 +555,10 @@
     [self enterText:text intoViewWithAccessibilityLabelOrIdentifier:labelOrIdentifier traits:traits expectedResult:expectedResult];
 }
 
+- (void) selectDatePickerValue:(NSArray*)datePickerColumnValues {
+    [self selectPickerValue:datePickerColumnValues pickerType:KIFUIDatePicker];
+}
+
 - (void) selectPickerViewRowWithTitle:(NSString*)title
 {
     [self runBlock:^KIFTestStepResult (NSError** error) {
@@ -589,6 +612,80 @@
          return KIFTestStepResultFailure;
      }];
 }
+
+- (void) selectPickerValue:(NSArray*)pickerColumnValues pickerType:(KIFPickerType)pickerType {
+    
+    [self runBlock:^KIFTestStepResult(NSError **error) {
+        NSInteger columnCount = [pickerColumnValues count];
+        NSMutableArray* found_values = [NSMutableArray arrayWithCapacity:columnCount];
+        for (NSInteger componentIndex = 0; componentIndex < columnCount; componentIndex++) {
+            [found_values addObject:[NSNumber numberWithBool:NO]];
+        }
+        // Find the picker view
+        UIPickerView *pickerView = nil;
+        switch (pickerType)
+        {
+            case KIFUIDatePicker:
+                pickerView = [[[[UIApplication sharedApplication] datePickerWindow] subviewsWithClassNameOrSuperClassNamePrefix:@"UIPickerView"] lastObject];
+                KIFTestCondition(pickerView, error, @"No picker view is present");
+                break;
+            case KIFUIPickerView:
+                pickerView = [[[[UIApplication sharedApplication] pickerViewWindow] subviewsWithClassNameOrSuperClassNamePrefix:@"UIPickerView"] lastObject];
+        }
+        
+        NSInteger componentCount = [pickerView.dataSource numberOfComponentsInPickerView:pickerView];
+        KIFTestCondition(componentCount == columnCount, error, @"The UIDatePicker does not have the expected column count.");
+        
+        for (NSInteger componentIndex = 0; componentIndex < componentCount; componentIndex++) {
+            NSInteger rowCount = [pickerView.dataSource pickerView:pickerView numberOfRowsInComponent:componentIndex];
+            for (NSInteger rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+                NSString *rowTitle = nil;
+                if ([pickerView.delegate respondsToSelector:@selector(pickerView:titleForRow:forComponent:)]) {
+                    rowTitle = [pickerView.delegate pickerView:pickerView titleForRow:rowIndex forComponent:componentIndex];
+                } else if ([pickerView.delegate respondsToSelector:@selector(pickerView:viewForRow:forComponent:reusingView:)]) {
+                    // This delegate inserts views directly, so try to figure out what the title is by looking for a label
+                    UIView *rowView = [pickerView.delegate pickerView:pickerView viewForRow:rowIndex forComponent:componentIndex reusingView:nil];
+                    NSArray *labels = [rowView subviewsWithClassNameOrSuperClassNamePrefix:@"UILabel"];
+                    UILabel *label = (labels.count > 0 ? labels[0] : nil);
+                    rowTitle = label.text;
+                }
+                
+                if ([rowTitle isEqual:pickerColumnValues[componentIndex]]) {
+                    [pickerView selectRow:rowIndex inComponent:componentIndex animated:false];
+                    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1, false);
+                    
+                    // Tap in the middle of the picker view to select the item
+                    [pickerView tap];
+                    [self waitForTimeInterval:0.5];
+                    
+                    // The combination of selectRow:inComponent:animated: and tap does not consistently result in
+                    // pickerView:didSelectRow:inComponent: being called on the delegate. We need to do it explicitly.
+                    if ([pickerView.delegate respondsToSelector:@selector(pickerView:didSelectRow:inComponent:)]) {
+                        [pickerView.delegate pickerView:pickerView didSelectRow:rowIndex inComponent:componentIndex];
+                    }
+                    
+                    [found_values replaceObjectAtIndex:componentIndex withObject:@(YES)];
+                    break;
+                }
+            }
+            if (found_values[componentIndex] == [NSNumber numberWithBool:YES]) {
+                continue;
+            }
+            
+        }
+        
+        for (NSInteger componentIndex = 0; componentIndex < columnCount; componentIndex++) {
+            if (found_values[componentIndex] == [NSNumber numberWithBool:NO]) {
+                KIFTestCondition(NO, error, @"Failed to select from Picker.");
+                return KIFTestStepResultFailure;
+            }
+        }
+        
+        return KIFTestStepResultSuccess;
+    }];
+    
+}
+
 
 - (void) setOn:(BOOL)switchIsOn forSwitchWithAccessibilityLabel:(NSString*)label
 {
@@ -891,6 +988,25 @@
     [tableView tapAtPoint:CGPointCenteredInRect(cellFrame)];
 }
 
+- (void)tapItemAtIndexPath:(NSIndexPath *)indexPath inCollectionViewWithAccessibilityIdentifier:(NSString *)identifier
+{
+    UICollectionView *collectionView;
+    [self waitForAccessibilityElement:NULL view:&collectionView withIdentifier:identifier tappable:NO];
+    [self tapItemAtIndexPath:indexPath inCollectionView:collectionView];
+}
+
+- (void)tapItemAtIndexPath:(NSIndexPath *)indexPath inCollectionView:(UICollectionView *)collectionView
+{
+    UICollectionViewCell *cell;
+    cell = [self waitForCellAtIndexPath:indexPath inCollectionView:collectionView];
+    
+    CGRect cellFrame = [cell.contentView convertRect:cell.contentView.frame toView:collectionView];
+    [collectionView tapAtPoint:CGPointCenteredInRect(cellFrame)];
+    
+    // Wait for the view to stabilize.
+    [tester waitForTimeInterval:0.5];
+}
+
 - (void) swipeViewWithAccessibilityLabel:(NSString*)label inDirection:(KIFSwipeDirection)direction
 {
     UIView* viewToSwipe;
@@ -1130,6 +1246,97 @@
      }];
 }
 
+- (UITableViewCell *)waitForCellAtIndexPath:(NSIndexPath *)indexPath inTableViewWithAccessibilityIdentifier:(NSString *)identifier
+{
+    UITableView *tableView;
+    [self waitForAccessibilityElement:NULL view:&tableView withIdentifier:identifier tappable:NO];
+    return [self waitForCellAtIndexPath:indexPath inTableView:tableView];
+}
+
+- (UITableViewCell *)waitForCellAtIndexPath:(NSIndexPath *)indexPath inTableView:(UITableView *)tableView
+{
+    if (![tableView isKindOfClass:[UITableView class]]) {
+        [self failWithError:[NSError KIFErrorWithFormat:@"View is not a table view"] stopTest:YES];
+    }
+    
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    
+    // If section < 0, search from the end of the table.
+    if (indexPath.section < 0) {
+        indexPath = [NSIndexPath indexPathForRow:indexPath.row inSection:tableView.numberOfSections + indexPath.section];
+    }
+    
+    // If row < 0, search from the end of the section.
+    if (indexPath.row < 0) {
+        indexPath = [NSIndexPath indexPathForRow:[tableView numberOfRowsInSection:indexPath.section] + indexPath.row inSection:indexPath.section];
+    }
+    
+    if (!cell) {
+        if (indexPath.section >= tableView.numberOfSections) {
+            [self failWithError:[NSError KIFErrorWithFormat:@"Section %d is not found in table view", (int)indexPath.section] stopTest:YES];
+        }
+        
+        if (indexPath.row >= [tableView numberOfRowsInSection:indexPath.section]) {
+            [self failWithError:[NSError KIFErrorWithFormat:@"Row %d is not found in section %d of table view", (int)indexPath.row, (int)indexPath.section] stopTest:YES];
+        }
+        
+        [tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+        [self waitForTimeInterval:0.5];
+        cell = [tableView cellForRowAtIndexPath:indexPath];
+    }
+    
+    if (!cell) {
+        [self failWithError:[NSError KIFErrorWithFormat: @"Table view cell at index path %@ not found", indexPath] stopTest:YES];
+    }
+    
+    return cell;
+}
+
+- (UICollectionViewCell *)waitForCellAtIndexPath:(NSIndexPath *)indexPath inCollectionViewWithAccessibilityIdentifier:(NSString *)identifier
+{
+    UICollectionView *collectionView;
+    [self waitForAccessibilityElement:NULL view:&collectionView withIdentifier:identifier tappable:NO];
+    return [self waitForCellAtIndexPath:indexPath inCollectionView:collectionView];
+}
+
+- (UICollectionViewCell *)waitForCellAtIndexPath:(NSIndexPath *)indexPath inCollectionView:(UICollectionView *)collectionView
+{
+    if (![collectionView isKindOfClass:[UICollectionView class]]) {
+        [self failWithError:[NSError KIFErrorWithFormat:@"View is not a collection view"] stopTest:YES];
+    }
+    
+    NSInteger section = indexPath.section;
+    NSInteger item    = indexPath.item;
+    
+    // If section < 0, search from the end of the table.
+    if (section < 0) {
+        section += collectionView.numberOfSections;
+    }
+    
+    // If item < 0, search from the end of the section.
+    if (item < 0) {
+        item += [collectionView numberOfItemsInSection:section];
+    }
+    
+    if (section >= collectionView.numberOfSections) {
+        [self failWithError:[NSError KIFErrorWithFormat:@"Section %d is not found in collection view", (int)section] stopTest:YES];
+    }
+    
+    if (item >= [collectionView numberOfItemsInSection:section]) {
+        [self failWithError:[NSError KIFErrorWithFormat:@"Item %d is not found in section %d of collection view", (int)item, (int)section] stopTest:YES];
+    }
+    
+    indexPath = [NSIndexPath indexPathForItem:item inSection:section];
+    [collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally | UICollectionViewScrollPositionCenteredVertically animated:YES];
+    [self waitForTimeInterval:0.5];
+    UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+    
+    if (!cell) {
+        [self failWithError:[NSError KIFErrorWithFormat: @"Collection view cell at index path %@ not found", indexPath] stopTest:YES];
+    }
+    return cell;
+}
+
 - (void) tapStatusBar
 {
     [self runBlock:^KIFTestStepResult (NSError** error) {
@@ -1147,6 +1354,20 @@
 
     [self tapAccessibilityElement:statusBars[0] inView:statusBars[0]];
 }
+
+- (void)moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath inTableViewWithAccessibilityIdentifier:(NSString *)identifier
+{
+    UITableView *tableView;
+    [self waitForAccessibilityElement:NULL view:&tableView withIdentifier:identifier tappable:NO];
+    
+    UITableViewCell *cell = [self waitForCellAtIndexPath:sourceIndexPath inTableView:tableView];
+    
+    NSError *error = nil;
+    if (![tableView dragCell:cell toIndexPath:destinationIndexPath error:&error]) {
+        [self failWithError:error stopTest:YES];
+    }
+}
+
 
 @end
 
