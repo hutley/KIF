@@ -160,7 +160,7 @@ static NSTimeInterval KIFTestStepDefaultTimeout = 10.0;
 
 - (void) failWithError:(NSError*)error stopTest:(BOOL)stopTest
 {
-    [self.delegate failWithException:[NSException failureInFile:self.file atLine:(int)self.line withDescription:error.localizedDescription] stopTest:stopTest];
+    [self.delegate failWithException:[NSException failureInFile:self.file atLine:(int)self.line withDescription:(error ? error.localizedDescription : @"")] stopTest:stopTest];
 }
 
 - (void) waitForTimeInterval:(NSTimeInterval)timeInterval
